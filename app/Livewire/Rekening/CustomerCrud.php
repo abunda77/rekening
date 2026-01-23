@@ -3,6 +3,7 @@
 namespace App\Livewire\Rekening;
 
 use App\Models\Customer;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -40,6 +41,32 @@ class CustomerCrud extends Component
 
     public string $address = '';
 
+    // Region Data
+    public array $provinces = [];
+
+    public array $regencies = [];
+
+    public array $districts = [];
+
+    public array $villages = [];
+
+    // Selected Regions
+    public ?string $province_code = null;
+
+    public ?string $province_name = null;
+
+    public ?string $regency_code = null;
+
+    public ?string $regency_name = null;
+
+    public ?string $district_code = null;
+
+    public ?string $district_name = null;
+
+    public ?string $village_code = null;
+
+    public ?string $village_name = null;
+
     public $upload_ktp = null;
 
     public ?string $existing_ktp = null;
@@ -66,9 +93,104 @@ class CustomerCrud extends Component
             'email' => 'nullable|email|max:255',
             'phone_number' => 'nullable|string|max:20',
             'address' => 'nullable|string',
+            'province_code' => 'nullable|string',
+            'province_name' => 'nullable|string',
+            'regency_code' => 'nullable|string',
+            'regency_name' => 'nullable|string',
+            'district_code' => 'nullable|string',
+            'district_name' => 'nullable|string',
+            'village_code' => 'nullable|string',
+            'village_name' => 'nullable|string',
             'upload_ktp' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'note' => 'nullable|string',
         ];
+    }
+
+    public function updatedProvinceCode($value): void
+    {
+        $this->province_name = collect($this->provinces)->firstWhere('code', $value)['name'] ?? null;
+        $this->reset(['regency_code', 'regency_name', 'district_code', 'district_name', 'village_code', 'village_name', 'regencies', 'districts', 'villages']);
+        if ($value) {
+            $this->fetchRegencies();
+        }
+    }
+
+    public function updatedRegencyCode($value): void
+    {
+        $this->regency_name = collect($this->regencies)->firstWhere('code', $value)['name'] ?? null;
+        $this->reset(['district_code', 'district_name', 'village_code', 'village_name', 'districts', 'villages']);
+        if ($value) {
+            $this->fetchDistricts();
+        }
+    }
+
+    public function updatedDistrictCode($value): void
+    {
+        $this->district_name = collect($this->districts)->firstWhere('code', $value)['name'] ?? null;
+        $this->reset(['village_code', 'village_name', 'villages']);
+        if ($value) {
+            $this->fetchVillages();
+        }
+    }
+
+    public function updatedVillageCode($value): void
+    {
+        $this->village_name = collect($this->villages)->firstWhere('code', $value)['name'] ?? null;
+    }
+
+    protected function fetchRegionData(string $endpoint)
+    {
+        $apiKey = env('API_CO_ID', 'API_CO_ID'); // Fallback if needed, but user should provide it
+
+        try {
+            $response = Http::withHeaders([
+                'x-api-co-id' => $apiKey,
+            ])->get("https://use.api.co.id{$endpoint}");
+
+            if ($response->successful() && ($response->json()['is_success'] ?? false)) {
+                return $response->json()['data'] ?? [];
+            }
+        } catch (\Exception $e) {
+            // connection error or otherwise
+        }
+
+        return [];
+    }
+
+    public function fetchProvinces(): void
+    {
+        $this->provinces = $this->fetchRegionData('/regional/indonesia/provinces');
+    }
+
+    public function fetchRegencies(): void
+    {
+        if ($this->province_code) {
+            $this->regencies = $this->fetchRegionData("/regional/indonesia/provinces/{$this->province_code}/regencies");
+        }
+    }
+
+    public function fetchDistricts(): void
+    {
+        if ($this->regency_code) {
+            // Using the pattern likely supported or implied
+            // Try regencies/{code}/districts first, if fails we might need to adjust.
+            // Based on hierarchy, it should be regencies/{code}/districts.
+            $this->districts = $this->fetchRegionData("/regional/indonesia/regencies/{$this->regency_code}/districts");
+
+            // Fallback if the above returns empty? The user snippet showed /regional/indonesia/districts
+            // If the above is empty, maybe try filtering listing?
+            if (empty($this->districts)) {
+                // Try alternate endpoint if the first one assumes a pattern not strictly documented
+                $this->districts = $this->fetchRegionData("/regional/indonesia/districts?regency_code={$this->regency_code}");
+            }
+        }
+    }
+
+    public function fetchVillages(): void
+    {
+        if ($this->district_code) {
+            $this->villages = $this->fetchRegionData("/regional/indonesia/districts/{$this->district_code}/villages");
+        }
     }
 
     public function updatedSearch(): void
@@ -100,10 +222,40 @@ class CustomerCrud extends Component
             $this->email = $customer->email ?? '';
             $this->phone_number = $customer->phone_number ?? '';
             $this->address = $customer->address ?? '';
+            $this->province_code = $customer->province_code;
+            $this->province_name = $customer->province;
+            $this->regency_code = $customer->regency_code;
+            $this->regency_name = $customer->regency;
+            $this->district_code = $customer->district_code;
+            $this->district_name = $customer->district;
+            $this->village_code = $customer->village_code;
+            $this->village_name = $customer->village;
+
+            // Load dependent data if codes exist
+            if ($this->province_code) {
+                $this->fetchRegencies();
+            }
+            if ($this->regency_code) {
+                $this->fetchDistricts();
+            }
+            if ($this->district_code) {
+                $this->fetchVillages();
+            }
+
             $this->existing_ktp = $customer->upload_ktp;
             $this->note = $customer->note ?? '';
         } else {
-            $this->reset(['nik', 'full_name', 'mother_name', 'email', 'phone_number', 'address', 'existing_ktp', 'note']);
+            $this->reset([
+                'nik', 'full_name', 'mother_name', 'email', 'phone_number', 'address',
+                'province_code', 'province_name', 'regency_code', 'regency_name',
+                'district_code', 'district_name', 'village_code', 'village_name',
+                'existing_ktp', 'note',
+            ]);
+            $this->resetValidation();
+        }
+
+        if (empty($this->provinces)) {
+            $this->fetchProvinces();
         }
 
         $this->showModal = true;
@@ -112,7 +264,14 @@ class CustomerCrud extends Component
     public function closeModal(): void
     {
         $this->showModal = false;
-        $this->reset(['editId', 'nik', 'full_name', 'mother_name', 'email', 'phone_number', 'address', 'upload_ktp', 'existing_ktp', 'note']);
+        $this->showModal = false;
+        $this->reset([
+            'editId', 'nik', 'full_name', 'mother_name', 'email', 'phone_number', 'address',
+            'province_code', 'province_name', 'regency_code', 'regency_name',
+            'district_code', 'district_name', 'village_code', 'village_name',
+            'upload_ktp', 'existing_ktp', 'note',
+            'regencies', 'districts', 'villages',
+        ]);
         $this->resetValidation();
     }
 
@@ -126,7 +285,16 @@ class CustomerCrud extends Component
             'mother_name' => $this->mother_name ?: null,
             'email' => $this->email ?: null,
             'phone_number' => $this->phone_number ?: null,
+            'phone_number' => $this->phone_number ?: null,
             'address' => $this->address ?: null,
+            'province_code' => $this->province_code ?: null,
+            'province' => $this->province_name ?: null,
+            'regency_code' => $this->regency_code ?: null,
+            'regency' => $this->regency_name ?: null,
+            'district_code' => $this->district_code ?: null,
+            'district' => $this->district_name ?: null,
+            'village_code' => $this->village_code ?: null,
+            'village' => $this->village_name ?: null,
             'note' => $this->note ?: null,
         ];
 

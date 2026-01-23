@@ -1,9 +1,10 @@
 <?php
 
 use App\Models\User;
-use function Pest\Laravel\postJson;
-use function Pest\Laravel\getJson;
+
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\getJson;
+use function Pest\Laravel\postJson;
 
 test('a user can register', function () {
     $response = postJson('/api/register', [
@@ -42,11 +43,11 @@ test('a user can login', function () {
 
 test('authenticated user can get their profile', function () {
     $user = User::factory()->create();
-    
-    // Create token manually or use actingAsSanctum equivalent if available, 
-    // but actingAs for Sanctum often requires setup. 
+
+    // Create token manually or use actingAsSanctum equivalent if available,
+    // but actingAs for Sanctum often requires setup.
     // Simplest is to just login and use the token, or use Laravel's actingAs with Sanctum guard.
-    
+
     $response = actingAs($user, 'sanctum')->getJson('/api/user');
 
     $response->assertStatus(200)
@@ -58,25 +59,25 @@ test('authenticated user can get their profile', function () {
 
 test('authenticated user can logout', function () {
     $user = User::factory()->create();
-    
+
     // Check if actingAs works for token deletion which relies on currentAccessToken()
     // currentAccessToken() might be null if we just use actingAs($user).
     // We need to actually create a token and authenticate with it to test currentAccessToken()->delete().
-    
+
     $token = $user->createToken('test-token')->plainTextToken;
-    
+
     $response = getJson('/api/user', [
-        'Authorization' => 'Bearer ' . $token,
+        'Authorization' => 'Bearer '.$token,
     ]);
     $response->assertStatus(200); // Verify token works
 
     $response = postJson('/api/logout', [], [
-        'Authorization' => 'Bearer ' . $token,
+        'Authorization' => 'Bearer '.$token,
     ]);
 
     $response->assertStatus(200)
         ->assertJson(['message' => 'Successfully logged out']);
-        
+
     // Verify token is gone (optional, but good for completeness)
     $this->assertDatabaseCount('personal_access_tokens', 0);
 });

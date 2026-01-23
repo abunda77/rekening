@@ -181,6 +181,48 @@
                     </flux:field>
                 </div>
 
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <flux:field>
+                        <flux:label>Provinsi</flux:label>
+                        <flux:select wire:model.live="province_code" placeholder="Pilih Provinsi">
+                            @foreach($provinces as $p)
+                                <option value="{{ $p['code'] }}">{{ $p['name'] }}</option>
+                            @endforeach
+                        </flux:select>
+                        <flux:error name="province_code" />
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>Kabupaten/Kota</flux:label>
+                        <flux:select wire:model.live="regency_code" placeholder="Pilih Kabupaten/Kota" :disabled="!$province_code">
+                            @foreach($regencies as $r)
+                                <option value="{{ $r['code'] }}">{{ $r['name'] }}</option>
+                            @endforeach
+                        </flux:select>
+                        <flux:error name="regency_code" />
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>Kecamatan</flux:label>
+                        <flux:select wire:model.live="district_code" placeholder="Pilih Kecamatan" :disabled="!$regency_code">
+                            @foreach($districts as $d)
+                                <option value="{{ $d['code'] }}">{{ $d['name'] }}</option>
+                            @endforeach
+                        </flux:select>
+                        <flux:error name="district_code" />
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>Kelurahan/Desa</flux:label>
+                        <flux:select wire:model.live="village_code" placeholder="Pilih Kelurahan/Desa" :disabled="!$district_code">
+                            @foreach($villages as $v)
+                                <option value="{{ $v['code'] }}">{{ $v['name'] }}</option>
+                            @endforeach
+                        </flux:select>
+                        <flux:error name="village_code" />
+                    </flux:field>
+                </div>
+
                 <flux:field>
                     <flux:label>Alamat</flux:label>
                     <flux:textarea wire:model="address" placeholder="Alamat lengkap sesuai KTP" rows="2" />
@@ -216,7 +258,7 @@
     </flux:modal>
 
     {{-- View Modal --}}
-    <flux:modal wire:model="showViewModal" name="view-modal" class="max-w-2xl">
+    <flux:modal wire:model="showViewModal" name="view-modal" class="md:w-full max-w-4xl">
         <div class="space-y-6">
             <div>
                 <flux:heading size="lg">Detail Customer</flux:heading>
@@ -249,6 +291,28 @@
                         <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Nama Ibu Kandung</span>
                         <p class="text-base text-zinc-900 dark:text-zinc-100">{{ $viewingCustomer->mother_name ?? '-' }}</p>
                     </div>
+
+                    <div class="space-y-1">
+                        <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Provinsi</span>
+                        <p class="text-base text-zinc-900 dark:text-zinc-100">{{ $viewingCustomer->province ?? '-' }}</p>
+                    </div>
+
+                    <div class="space-y-1">
+                        <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Kabupaten/Kota</span>
+                        <p class="text-base text-zinc-900 dark:text-zinc-100">{{ $viewingCustomer->regency ?? '-' }}</p>
+                    </div>
+
+                    <div class="space-y-1">
+                        <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Kecamatan</span>
+                        <p class="text-base text-zinc-900 dark:text-zinc-100">{{ $viewingCustomer->district ?? '-' }}</p>
+                    </div>
+
+                    <div class="space-y-1">
+                        <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Kelurahan/Desa</span>
+                        <p class="text-base text-zinc-900 dark:text-zinc-100">{{ $viewingCustomer->village ?? '-' }}</p>
+                    </div>
+
+
 
                     <div class="md:col-span-2 space-y-1">
                         <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Alamat</span>
