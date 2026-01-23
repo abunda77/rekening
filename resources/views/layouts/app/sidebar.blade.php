@@ -16,6 +16,27 @@
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
+
+                <flux:sidebar.group :heading="__('Rekening')" class="grid">
+                    <flux:sidebar.item icon="users" :href="route('rekening.agents')" :current="request()->routeIs('rekening.agents')" wire:navigate>
+                        {{ __('Agent') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="user-circle" :href="route('rekening.customers')" :current="request()->routeIs('rekening.customers')" wire:navigate>
+                        {{ __('Customer') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="building-library" :href="route('rekening.accounts')" :current="request()->routeIs('rekening.accounts')" wire:navigate>
+                        {{ __('Rekening Bank') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="credit-card" :href="route('rekening.cards')" :current="request()->routeIs('rekening.cards')" wire:navigate>
+                        {{ __('Kartu ATM') }}
+                    </flux:sidebar.item>
+                </flux:sidebar.group>
+
+                <flux:sidebar.group :heading="__('Support')" class="grid">
+                    <flux:sidebar.item icon="chat-bubble-left-right" :href="route('rekening.complaints')" :current="request()->routeIs('rekening.complaints')" wire:navigate>
+                        {{ __('Help Desk') }}
+                    </flux:sidebar.item>
+                </flux:sidebar.group>
             </flux:sidebar.nav>
 
             <flux:spacer />
