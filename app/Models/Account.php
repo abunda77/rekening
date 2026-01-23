@@ -27,6 +27,7 @@ class Account extends Model
         'opening_date',
         'note',
         'status',
+        'mobile_banking',
     ];
 
     /**

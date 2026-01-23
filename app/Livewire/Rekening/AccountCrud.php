@@ -43,6 +43,8 @@ class AccountCrud extends Component
 
     public string $note = '';
 
+    public ?string $mobile_banking = '';
+
     public string $status = 'aktif';
 
     public bool $showModal = false;
@@ -50,6 +52,28 @@ class AccountCrud extends Component
     public bool $showDeleteModal = false;
 
     public ?string $deleteId = null;
+
+    // View Modal
+    public bool $showViewModal = false;
+
+    public ?Account $viewingAccount = null;
+
+    public function getBanksProperty(): array
+    {
+        return [
+            'BCA' => 'Bank Central Asia (BCA)',
+            'BRI' => 'Bank Rakyat Indonesia (BRI)',
+            'MANDIRI' => 'Bank Mandiri',
+            'BNI' => 'Bank Negara Indonesia (BNI)',
+            'BTN' => 'Bank Tabungan Negara (BTN)',
+            'CIMB' => 'CIMB Niaga',
+            'DANAMON' => 'Bank Danamon',
+            'PERMATA' => 'Bank Permata',
+            'BSI' => 'Bank Syariah Indonesia (BSI)',
+            'PANIN' => 'Panin Bank',
+            'MAYBANK' => 'Maybank Indonesia',
+        ];
+    }
 
     protected function rules(): array
     {
@@ -61,6 +85,7 @@ class AccountCrud extends Component
             'account_number' => 'required|string|max:50|unique:accounts,account_number,'.$this->editId,
             'opening_date' => 'nullable|date',
             'note' => 'nullable|string',
+            'mobile_banking' => 'nullable|string',
             'status' => 'required|in:aktif,bermasalah,nonaktif',
         ];
     }
@@ -99,9 +124,10 @@ class AccountCrud extends Component
             $this->account_number = $account->account_number;
             $this->opening_date = $account->opening_date?->format('Y-m-d');
             $this->note = $account->note ?? '';
+            $this->mobile_banking = $account->mobile_banking ?? '';
             $this->status = $account->status;
         } else {
-            $this->reset(['customer_id', 'agent_id', 'bank_name', 'branch', 'account_number', 'opening_date', 'note']);
+            $this->reset(['customer_id', 'agent_id', 'bank_name', 'branch', 'account_number', 'opening_date', 'note', 'mobile_banking']);
             $this->status = 'aktif';
         }
 
@@ -111,7 +137,7 @@ class AccountCrud extends Component
     public function closeModal(): void
     {
         $this->showModal = false;
-        $this->reset(['editId', 'customer_id', 'agent_id', 'bank_name', 'branch', 'account_number', 'opening_date', 'note', 'status']);
+        $this->reset(['editId', 'customer_id', 'agent_id', 'bank_name', 'branch', 'account_number', 'opening_date', 'note', 'mobile_banking', 'status']);
         $this->resetValidation();
     }
 
@@ -127,6 +153,7 @@ class AccountCrud extends Component
             'account_number' => $this->account_number,
             'opening_date' => $this->opening_date ?: null,
             'note' => $this->note ?: null,
+            'mobile_banking' => $this->mobile_banking ?: null,
             'status' => $this->status,
         ];
 
@@ -162,6 +189,18 @@ class AccountCrud extends Component
     {
         $this->showDeleteModal = false;
         $this->deleteId = null;
+    }
+
+    public function view(string $id): void
+    {
+        $this->viewingAccount = Account::with(['customer', 'agent'])->findOrFail($id);
+        $this->showViewModal = true;
+    }
+
+    public function closeViewModal(): void
+    {
+        $this->showViewModal = false;
+        $this->viewingAccount = null;
     }
 
     public function render()

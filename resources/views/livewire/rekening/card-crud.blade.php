@@ -90,6 +90,7 @@
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <div class="flex items-center justify-center gap-2">
+                                    <flux:button wire:click="view('{{ $card->id }}')" size="sm" variant="ghost" icon="eye" />
                                     <flux:button wire:click="openModal('{{ $card->id }}')" size="sm" variant="ghost" icon="pencil" />
                                     <flux:button wire:click="confirmDelete('{{ $card->id }}')" size="sm" variant="ghost" icon="trash" class="text-red-500 hover:text-red-700" />
                                 </div>
@@ -119,18 +120,40 @@
             <flux:heading size="lg">{{ $editId ? 'Edit Kartu' : 'Tambah Kartu Baru' }}</flux:heading>
 
             <form wire:submit="save" class="space-y-4">
-                <flux:field>
-                    <flux:label>Rekening</flux:label>
-                    <flux:select wire:model="account_id">
-                        <option value="">Pilih rekening...</option>
-                        @foreach($accounts as $account)
-                            <option value="{{ $account->id }}">
-                                {{ $account->bank_name }} - {{ $account->account_number }} ({{ $account->customer?->full_name }})
-                            </option>
-                        @endforeach
-                    </flux:select>
-                    <flux:error name="account_id" />
-                </flux:field>
+                <div class="relative">
+                    <flux:field>
+                        <flux:label>Rekening</flux:label>
+                        <flux:input 
+                            wire:model.live.debounce.300ms="accountSearch" 
+                            placeholder="Ketik nama bank, no. rekening, atau nama nasabah..." 
+                            icon="magnifying-glass"
+                        />
+                        <input type="hidden" wire:model="account_id">
+                        <flux:error name="account_id" />
+                    </flux:field>
+
+                    @if($isSearching && strlen($accountSearch) >= 2)
+                        <div class="absolute z-50 mt-1 w-full overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-800">
+                            @if(count($searchedAccounts) > 0)
+                                <ul class="max-h-60 overflow-y-auto py-1">
+                                    @foreach($searchedAccounts as $account)
+                                        <li 
+                                            wire:click="selectAccount('{{ $account->id }}', '{{ $account->bank_name }} - {{ $account->account_number }} ({{ $account->customer?->full_name }})')"
+                                            class="cursor-pointer px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700/50"
+                                        >
+                                            <div class="font-medium">{{ $account->bank_name }} - {{ $account->account_number }}</div>
+                                            <div class="text-xs text-zinc-500">{{ $account->customer?->full_name }}</div>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @else
+                                <div class="px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400">
+                                    Tidak ada data ditemukan.
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+                </div>
 
                 <flux:field>
                     <flux:label>No. Kartu</flux:label>
@@ -138,19 +161,11 @@
                     <flux:error name="card_number" />
                 </flux:field>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <flux:field>
-                        <flux:label>CVV {{ $editId ? '(kosongkan jika tidak diubah)' : '' }}</flux:label>
-                        <flux:input wire:model="cvv" type="password" placeholder="***" maxlength="3" />
-                        <flux:error name="cvv" />
-                    </flux:field>
-
-                    <flux:field>
-                        <flux:label>PIN {{ $editId ? '(kosongkan jika tidak diubah)' : '' }}</flux:label>
-                        <flux:input wire:model="pin_hash" type="password" placeholder="******" maxlength="6" />
-                        <flux:error name="pin_hash" />
-                    </flux:field>
-                </div>
+                <flux:field>
+                    <flux:label>Catatan (CVV & PIN)</flux:label>
+                    <flux:textarea wire:model="notes" rows="4" placeholder="CVV :&#10;PIN :" />
+                    <flux:error name="notes" />
+                </flux:field>
 
                 <div class="grid grid-cols-2 gap-4">
                     <flux:field>
@@ -161,7 +176,12 @@
 
                     <flux:field>
                         <flux:label>Tipe Kartu</flux:label>
-                        <flux:input wire:model="card_type" placeholder="Debit, Visa, Mastercard..." />
+                        <flux:select wire:model="card_type" placeholder="Pilih tipe kartu...">
+                            <option value="Kredit">Kredit</option>
+                            <option value="Debit">Debit</option>
+                            <option value="GPN">GPN</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </flux:select>
                         <flux:error name="card_type" />
                     </flux:field>
                 </div>
@@ -184,6 +204,72 @@
             <div class="flex justify-end gap-3">
                 <flux:button wire:click="cancelDelete" variant="ghost">Batal</flux:button>
                 <flux:button wire:click="delete" variant="danger">Hapus</flux:button>
+            </div>
+        </div>
+    </flux:modal>
+
+    {{-- View Modal --}}
+    <flux:modal wire:model="showViewModal" name="view-modal" class="md:w-full max-w-2xl">
+        <div class="space-y-6">
+            <div>
+                <flux:heading size="lg">Detail Kartu ATM</flux:heading>
+                <flux:description>Informasi lengkap kartu ATM</flux:description>
+            </div>
+
+            @if($viewingCard)
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div class="space-y-1">
+                        <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">No. Kartu</span>
+                        <p class="font-mono text-base font-medium text-amber-600 dark:text-amber-400">
+                            {{ $viewingCard->card_number }}
+                        </p>
+                    </div>
+
+                    <div class="space-y-1">
+                        <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Tipe Kartu</span>
+                        <flux:badge color="purple">{{ $viewingCard->card_type ?? 'Debit' }}</flux:badge>
+                    </div>
+
+                    <div class="space-y-1">
+                        <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Bank & Rekening</span>
+                        <p class="text-base font-medium text-zinc-900 dark:text-zinc-100">{{ $viewingCard->account?->bank_name }}</p>
+                        <p class="text-sm text-zinc-500 dark:text-zinc-400 font-mono">{{ $viewingCard->account?->account_number }}</p>
+                    </div>
+
+                    <div class="space-y-1">
+                        <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Nasabah</span>
+                        <p class="text-base font-medium text-zinc-900 dark:text-zinc-100">{{ $viewingCard->account?->customer?->full_name ?? '-' }}</p>
+                        <p class="text-sm text-zinc-500 dark:text-zinc-400">NIK: {{ $viewingCard->account?->customer?->nik ?? '-' }}</p>
+                    </div>
+
+                    <div class="space-y-1">
+                        <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Tanggal Kadaluarsa</span>
+                        <p class="text-base font-medium text-zinc-900 dark:text-zinc-100">
+                            @if($viewingCard->expiry_date)
+                                {{ $viewingCard->expiry_date->format('m/Y') }}
+                                @if($viewingCard->expiry_date->isPast())
+                                    <span class="text-red-500 text-xs ml-1">(Expired)</span>
+                                @endif
+                            @else
+                                -
+                            @endif
+                        </p>
+                    </div>
+
+                    <div class="space-y-1">
+                        <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Dibuat Pada</span>
+                        <p class="text-base text-zinc-900 dark:text-zinc-100">{{ $viewingCard->created_at->format('d M Y H:i') }}</p>
+                    </div>
+
+                    <div class="space-y-1 col-span-1 md:col-span-2">
+                        <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Catatan (CVV & PIN)</span>
+                        <p class="text-base font-mono whitespace-pre-line text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-700/50 p-3 rounded-lg border border-zinc-200 dark:border-zinc-700">{{ $viewingCard->notes ?? '-' }}</p>
+                    </div>
+                </div>
+            @endif
+
+            <div class="flex justify-end pt-4">
+                <flux:button wire:click="closeViewModal" variant="ghost">Tutup</flux:button>
             </div>
         </div>
     </flux:modal>

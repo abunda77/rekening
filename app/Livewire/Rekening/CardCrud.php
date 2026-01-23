@@ -30,13 +30,11 @@ class CardCrud extends Component
 
     public string $card_number = '';
 
-    public string $cvv = '';
-
     public ?string $expiry_date = null;
 
-    public string $pin_hash = '';
-
     public string $card_type = '';
+
+    public string $notes = "CVV :\nPIN :";
 
     public bool $showModal = false;
 
@@ -44,21 +42,44 @@ class CardCrud extends Component
 
     public ?string $deleteId = null;
 
+    // View Modal
+    public bool $showViewModal = false;
+
+    public ?Card $viewingCard = null;
+
+    // Searchable Select
+    public string $accountSearch = '';
+    public bool $isSearching = false;
+
     protected function rules(): array
     {
         return [
             'account_id' => 'required|exists:accounts,id',
             'card_number' => 'required|string|max:20|unique:cards,card_number,'.$this->editId,
-            'cvv' => $this->editId ? 'nullable|string|size:3' : 'required|string|size:3',
             'expiry_date' => 'nullable|date',
-            'pin_hash' => $this->editId ? 'nullable|string|min:4|max:6' : 'required|string|min:4|max:6',
             'card_type' => 'nullable|string|max:50',
+            'notes' => 'nullable|string',
         ];
     }
 
     public function updatedSearch(): void
     {
         $this->resetPage();
+    }
+
+    public function updatedAccountSearch(): void
+    {
+        // Jika user mengetik, kita buka dropdown dan reset pilihan (opsional, tergantung UX yg dimau)
+        // Disini kita biarkan account_id tetap kecuali user memilih ulang, 
+        // tapi visual indikasi nanti ada di UI
+        $this->isSearching = true;
+    }
+
+    public function selectAccount(string $id, string $displayText): void
+    {
+        $this->account_id = $id;
+        $this->accountSearch = $displayText;
+        $this->isSearching = false;
     }
 
     public function sortBy(string $field): void
@@ -75,17 +96,24 @@ class CardCrud extends Component
     {
         $this->resetValidation();
         $this->editId = $id;
+        $this->isSearching = false;
 
         if ($id) {
             $card = Card::findOrFail($id);
             $this->account_id = $card->account_id;
+            
+            // Set initial search text for display
+            if ($card->account) {
+                $this->accountSearch = "{$card->account->bank_name} - {$card->account->account_number} ({$card->account->customer?->full_name})";
+            }
+            
             $this->card_number = $card->card_number;
-            $this->cvv = '';
             $this->expiry_date = $card->expiry_date?->format('Y-m-d');
-            $this->pin_hash = '';
             $this->card_type = $card->card_type ?? '';
+            $this->notes = $card->notes ?? "CVV :\nPIN :";
         } else {
-            $this->reset(['account_id', 'card_number', 'cvv', 'expiry_date', 'pin_hash', 'card_type']);
+            $this->reset(['account_id', 'card_number', 'expiry_date', 'card_type', 'notes', 'accountSearch']);
+            $this->notes = "CVV :\nPIN :";
         }
 
         $this->showModal = true;
@@ -94,7 +122,8 @@ class CardCrud extends Component
     public function closeModal(): void
     {
         $this->showModal = false;
-        $this->reset(['editId', 'account_id', 'card_number', 'cvv', 'expiry_date', 'pin_hash', 'card_type']);
+        $this->reset(['editId', 'account_id', 'card_number', 'expiry_date', 'card_type', 'notes', 'accountSearch']);
+        $this->isSearching = false;
         $this->resetValidation();
     }
 
@@ -107,15 +136,8 @@ class CardCrud extends Component
             'card_number' => $this->card_number,
             'expiry_date' => $this->expiry_date ?: null,
             'card_type' => $this->card_type ?: null,
+            'notes' => $this->notes,
         ];
-
-        if ($this->cvv) {
-            $data['cvv'] = $this->cvv;
-        }
-
-        if ($this->pin_hash) {
-            $data['pin_hash'] = $this->pin_hash;
-        }
 
         if ($this->editId) {
             Card::findOrFail($this->editId)->update($data);
@@ -151,6 +173,18 @@ class CardCrud extends Component
         $this->deleteId = null;
     }
 
+    public function view(string $id): void
+    {
+        $this->viewingCard = Card::with(['account.customer'])->findOrFail($id);
+        $this->showViewModal = true;
+    }
+
+    public function closeViewModal(): void
+    {
+        $this->showViewModal = false;
+        $this->viewingCard = null;
+    }
+
     public function render()
     {
         $cards = Card::query()
@@ -166,9 +200,23 @@ class CardCrud extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
+        // Logic pencarian akun untuk dropdown
+        $searchedAccounts = [];
+        if (strlen($this->accountSearch) >= 2) {
+             $searchedAccounts = Account::query()
+                ->with('customer')
+                ->where('account_number', 'like', '%' . $this->accountSearch . '%')
+                ->orWhere('bank_name', 'like', '%' . $this->accountSearch . '%')
+                ->orWhereHas('customer', function ($q) {
+                    $q->where('full_name', 'like', '%' . $this->accountSearch . '%');
+                })
+                ->limit(10)
+                ->get();
+        }
+
         return view('livewire.rekening.card-crud', [
             'cards' => $cards,
-            'accounts' => Account::with('customer')->orderBy('account_number')->get(),
+            'searchedAccounts' => $searchedAccounts,
         ]);
     }
 }

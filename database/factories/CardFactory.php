@@ -22,10 +22,9 @@ class CardFactory extends Factory
         return [
             'account_id' => Account::factory(),
             'card_number' => fake()->unique()->creditCardNumber(),
-            'cvv' => fake()->numerify('###'),
             'expiry_date' => fake()->dateTimeBetween('+1 year', '+5 years')->format('Y-m-d'),
-            'pin_hash' => fake()->numerify('######'),
             'card_type' => fake()->randomElement($cardTypes),
+            'notes' => "CVV : " . fake()->numerify('###') . "\nPIN : " . fake()->numerify('######'),
         ];
     }
 }

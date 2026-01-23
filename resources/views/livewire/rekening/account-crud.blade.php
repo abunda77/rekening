@@ -104,6 +104,7 @@
                                 </td>
                                 <td class="px-4 py-3 text-center">
                                     <div class="flex items-center justify-center gap-2">
+                                        <flux:button wire:click="view('{{ $account->id }}')" size="sm" variant="ghost" icon="eye" />
                                         <flux:button wire:click="openModal('{{ $account->id }}')" size="sm" variant="ghost" icon="pencil" />
                                         <flux:button wire:click="confirmDelete('{{ $account->id }}')" size="sm" variant="ghost" icon="trash" class="text-red-500 hover:text-red-700" />
                                     </div>
@@ -157,7 +158,12 @@
 
                         <flux:field>
                             <flux:label>Nama Bank</flux:label>
-                            <flux:input wire:model="bank_name" placeholder="MANDIRI, BCA, BRI..." />
+                            <flux:select wire:model="bank_name" placeholder="Pilih Bank">
+                                <option value="">Pilih Bank...</option>
+                                @foreach($this->banks as $code => $name)
+                                    <option value="{{ $code }}">{{ $name }}</option>
+                                @endforeach
+                            </flux:select>
                             <flux:error name="bank_name" />
                         </flux:field>
 
@@ -191,6 +197,12 @@
                     </div>
 
                     <flux:field>
+                        <flux:label>Mobile Banking</flux:label>
+                        <flux:textarea wire:model="mobile_banking" placeholder="User : &#10;Password : &#10;PIN :" rows="4" />
+                        <flux:error name="mobile_banking" />
+                    </flux:field>
+
+                    <flux:field>
                         <flux:label>Catatan</flux:label>
                         <flux:textarea wire:model="note" placeholder="Catatan tambahan (opsional)" rows="2" />
                         <flux:error name="note" />
@@ -214,6 +226,92 @@
                 <div class="flex justify-end gap-3">
                     <flux:button wire:click="cancelDelete" variant="ghost">Batal</flux:button>
                     <flux:button wire:click="delete" variant="danger">Hapus</flux:button>
+                </div>
+            </div>
+        </flux:modal>
+        {{-- View Modal --}}
+        <flux:modal wire:model="showViewModal" name="view-modal" class="md:w-full max-w-4xl">
+            <div class="space-y-6">
+                <div>
+                    <flux:heading size="lg">Detail Rekening</flux:heading>
+                    <flux:description>Informasi lengkap data rekening</flux:description>
+                </div>
+
+                @if($viewingAccount)
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <div class="space-y-1">
+                            <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">No. Rekening</span>
+                            <p class="font-mono text-base font-medium text-blue-600 dark:text-blue-400">{{ $viewingAccount->account_number }}</p>
+                        </div>
+                        
+                        <div class="space-y-1">
+                            <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Bank & Cabang</span>
+                            <p class="text-base font-medium text-zinc-900 dark:text-zinc-100">{{ $viewingAccount->bank_name }}</p>
+                            @if($viewingAccount->branch)
+                                <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $viewingAccount->branch }}</p>
+                            @endif
+                        </div>
+
+                        <div class="space-y-1">
+                            <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Nasabah</span>
+                            <p class="text-base font-medium text-zinc-900 dark:text-zinc-100">{{ $viewingAccount->customer?->full_name ?? '-' }}</p>
+                            <p class="text-sm text-zinc-500 dark:text-zinc-400">NIK: {{ $viewingAccount->customer?->nik ?? '-' }}</p>
+                        </div>
+
+                        <div class="space-y-1">
+                            <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Agent Referral</span>
+                            <p class="text-base text-zinc-900 dark:text-zinc-100">{{ $viewingAccount->agent?->agent_name ?? '-' }}</p>
+                            @if($viewingAccount->agent)
+                                <p class="text-sm text-zinc-500 dark:text-zinc-400">Kode: {{ $viewingAccount->agent->agent_code }}</p>
+                            @endif
+                        </div>
+
+                        <div class="space-y-1">
+                            <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Status</span>
+                            <div class="mt-1">
+                                @switch($viewingAccount->status)
+                                    @case('aktif')
+                                        <flux:badge color="green">Aktif</flux:badge>
+                                        @break
+                                    @case('bermasalah')
+                                        <flux:badge color="yellow">Bermasalah</flux:badge>
+                                        @break
+                                    @case('nonaktif')
+                                        <flux:badge color="zinc">Non-Aktif</flux:badge>
+                                        @break
+                                @endswitch
+                            </div>
+                        </div>
+
+                        <div class="space-y-1">
+                            <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Tanggal Pembukaan</span>
+                            <p class="text-base text-zinc-900 dark:text-zinc-100">{{ $viewingAccount->opening_date?->format('d M Y') ?? '-' }}</p>
+                        </div>
+
+                        <div class="md:col-span-2 space-y-1">
+                            <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Mobile Banking</span>
+                            <p class="text-base text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap">{{ $viewingAccount->mobile_banking ?? '-' }}</p>
+                        </div>
+
+                        <div class="md:col-span-2 space-y-1">
+                            <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Catatan</span>
+                            <p class="text-base text-zinc-900 dark:text-zinc-100">{{ $viewingAccount->note ?? '-' }}</p>
+                        </div>
+
+                        <div class="space-y-1">
+                            <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Dibuat Pada</span>
+                            <p class="text-base text-zinc-900 dark:text-zinc-100">{{ $viewingAccount->created_at->format('d M Y H:i') }}</p>
+                        </div>
+
+                        <div class="space-y-1">
+                            <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Diperbarui Pada</span>
+                            <p class="text-base text-zinc-900 dark:text-zinc-100">{{ $viewingAccount->updated_at->format('d M Y H:i') }}</p>
+                        </div>
+                    </div>
+                @endif
+
+                <div class="flex justify-end pt-4">
+                    <flux:button wire:click="closeViewModal" variant="ghost">Tutup</flux:button>
                 </div>
             </div>
         </flux:modal>

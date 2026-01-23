@@ -20,10 +20,9 @@ class Card extends Model
     protected $fillable = [
         'account_id',
         'card_number',
-        'cvv',
         'expiry_date',
-        'pin_hash',
         'card_type',
+        'notes',
     ];
 
     /**
@@ -32,8 +31,7 @@ class Card extends Model
      * @var list<string>
      */
     protected $hidden = [
-        'cvv',
-        'pin_hash',
+        //
     ];
 
     /**
@@ -45,8 +43,6 @@ class Card extends Model
     {
         return [
             'expiry_date' => 'date',
-            'cvv' => 'encrypted',
-            'pin_hash' => 'encrypted',
         ];
     }
 
