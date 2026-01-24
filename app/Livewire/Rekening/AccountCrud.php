@@ -2,16 +2,16 @@
 
 namespace App\Livewire\Rekening;
 
+use App\Exports\AccountsExport;
 use App\Models\Account;
 use App\Models\Agent;
 use App\Models\Customer;
-use App\Exports\AccountsExport;
-use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Maatwebsite\Excel\Facades\Excel;
 
 #[Layout('layouts.app.sidebar')]
 #[Title('Manajemen Rekening')]
@@ -82,6 +82,8 @@ class AccountCrud extends Component
             'BSI' => 'Bank Syariah Indonesia (BSI)',
             'PANIN' => 'Panin Bank',
             'MAYBANK' => 'Maybank Indonesia',
+            'OCBC' => 'OCBC NISP',
+            'LAINNYA' => 'Lainnya',
         ];
     }
 
@@ -292,7 +294,7 @@ class AccountCrud extends Component
 
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->output();
-        }, 'account_' . $account->account_number . '.pdf');
+        }, 'account_'.$account->account_number.'.pdf');
     }
 
     public function render()
