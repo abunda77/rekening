@@ -30,6 +30,7 @@ Route::middleware(['auth', 'verified'])->prefix('rekening')->group(function () {
 Route::prefix('agent')->name('agent.')->group(function () {
     Route::get('/login', AgentLogin::class)->middleware('guest:agent')->name('login');
     Route::get('/dashboard', AgentDashboard::class)->middleware('auth:agent')->name('dashboard');
+    Route::get('/help-desk', \App\Livewire\Agent\HelpDesk::class)->middleware('auth:agent')->name('help-desk');
 });
 
 require __DIR__.'/settings.php';

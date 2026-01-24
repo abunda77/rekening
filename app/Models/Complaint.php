@@ -20,6 +20,7 @@ class Complaint extends Model
     protected $fillable = [
         'customer_id',
         'agent_id',
+        'account_id',
         'subject',
         'description',
         'status',
@@ -43,5 +44,15 @@ class Complaint extends Model
     public function agent(): BelongsTo
     {
         return $this->belongsTo(Agent::class);
+    }
+
+    /**
+     * Get the account that this complaint is about.
+     *
+     * @return BelongsTo<Account, $this>
+     */
+    public function account(): BelongsTo
+    {
+        return $this->belongsTo(Account::class);
     }
 }

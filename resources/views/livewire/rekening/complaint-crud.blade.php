@@ -58,7 +58,7 @@
                                 <span class="ml-1">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
                             @endif
                         </th>
-                        <th class="px-4 py-3 font-semibold">Nasabah</th>
+                        <th class="px-4 py-3 font-semibold">Nasabah (Rekening)</th>
                         <th class="px-4 py-3 font-semibold">Agent</th>
                         <th class="px-4 py-3 font-semibold cursor-pointer" wire:click="sortBy('status')">
                             Status
@@ -88,8 +88,13 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-zinc-700 dark:text-zinc-300">
-                                {{ $complaint->customer?->full_name ?? '-' }}
-                                <span class="text-xs text-zinc-500 block">{{ $complaint->customer?->phone_number }}</span>
+                                <div class="font-medium">{{ $complaint->customer?->full_name ?? '-' }}</div>
+                                 @if($complaint->account)
+                                    <div class="text-xs text-emerald-600 dark:text-emerald-400 font-mono">{{ $complaint->account->account_number }}</div>
+                                    <div class="text-[10px] text-zinc-500">{{ $complaint->account->bank_name }}</div>
+                                @else
+                                    <div class="text-xs text-zinc-400 italic">Akun dihapus/tidak ada</div>
+                                @endif
                             </td>
                             <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400">{{ $complaint->agent?->agent_name ?? '-' }}</td>
                             <td class="px-4 py-3">
@@ -130,6 +135,7 @@
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <div class="flex items-center justify-center gap-2">
+                                     <flux:button wire:click="view('{{ $complaint->id }}')" size="sm" variant="ghost" icon="eye" />
                                     <flux:button wire:click="openModal('{{ $complaint->id }}')" size="sm" variant="ghost" icon="pencil" />
                                     <flux:button wire:click="confirmDelete('{{ $complaint->id }}')" size="sm" variant="ghost" icon="trash" class="text-red-500 hover:text-red-700" />
                                 </div>
@@ -161,20 +167,20 @@
             <form wire:submit="save" class="space-y-4">
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <flux:field>
-                        <flux:label>Nasabah</flux:label>
-                        <flux:select wire:model="customer_id">
-                            <option value="">Pilih nasabah...</option>
-                            @foreach($customers as $customer)
-                                <option value="{{ $customer->id }}">{{ $customer->full_name }} ({{ $customer->nik }})</option>
+                        <flux:label>Rekening Nasabah</flux:label>
+                        <flux:select wire:model="account_id" placeholder="Pilih rekening...">
+                             <option value="">Pilih rekening...</option>
+                            @foreach($accounts as $account)
+                                <option value="{{ $account->id }}">{{ $account->customer->full_name }} ({{ $account->account_number }}) - {{ $account->bank_name }}</option>
                             @endforeach
                         </flux:select>
-                        <flux:error name="customer_id" />
+                        <flux:error name="account_id" />
                     </flux:field>
 
                     <flux:field>
                         <flux:label>Agent PIC</flux:label>
-                        <flux:select wire:model="agent_id">
-                            <option value="">Assign ke agent (opsional)...</option>
+                        <flux:select wire:model="agent_id" placeholder="Assign ke agent...">
+                             <option value="">Assign ke agent (opsional)...</option>
                             @foreach($agents as $agent)
                                 <option value="{{ $agent->id }}">{{ $agent->agent_name }} ({{ $agent->agent_code }})</option>
                             @endforeach
@@ -215,6 +221,77 @@
         </div>
     </flux:modal>
 
+     {{-- View Modal --}}
+    <flux:modal wire:model="showViewModal" name="view-modal" class="max-w-2xl">
+        <div class="space-y-6">
+            <flux:heading size="lg">Detail Pengaduan</flux:heading>
+
+            @if($viewingComplaint)
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                         <div>
+                            <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Nasabah</span>
+                            <p class="text-base font-bold text-zinc-900 dark:text-zinc-100">{{ $viewingComplaint->customer?->full_name ?? '-' }}</p>
+                            <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ $viewingComplaint->customer?->nik }}</p>
+                        </div>
+                        <div>
+                             <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Rekening</span>
+                            @if($viewingComplaint->account)
+                                <p class="text-base font-bold text-emerald-600 dark:text-emerald-400 font-mono">{{ $viewingComplaint->account->account_number }}</p>
+                                <p class="text-sm text-zinc-900 dark:text-zinc-100">{{ $viewingComplaint->account->bank_name }} - {{ $viewingComplaint->account->branch }}</p>
+                            @else
+                                <p class="text-sm italic text-zinc-400">Tidak ada data rekening</p>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Subjek</span>
+                        <p class="text-base font-medium text-zinc-900 dark:text-zinc-100">{{ $viewingComplaint->subject }}</p>
+                    </div>
+
+                    <div>
+                        <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Deskripsi</span>
+                        <div class="mt-1 p-3 bg-zinc-50 dark:bg-zinc-700/50 rounded-lg border border-zinc-100 dark:border-zinc-700">
+                             <p class="text-sm text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap">{{ $viewingComplaint->description }}</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                             <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Status</span>
+                             <div class="mt-1">
+                                    @switch($viewingComplaint->status)
+                                    @case('pending')
+                                        <flux:badge color="zinc">Pending</flux:badge>
+                                        @break
+                                    @case('processing')
+                                        <flux:badge color="blue">Proses</flux:badge>
+                                        @break
+                                    @case('resolved')
+                                        <flux:badge color="green">Selesai</flux:badge>
+                                        @break
+                                @endswitch
+                             </div>
+                        </div>
+                         <div>
+                            <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Agent PIC</span>
+                            <p class="text-base text-zinc-900 dark:text-zinc-100">{{ $viewingComplaint->agent?->agent_name ?? '-' }}</p>
+                        </div>
+                    </div>
+
+                     <div class="text-xs text-zinc-400 pt-2 border-t border-zinc-100 dark:border-zinc-700">
+                        Tiket dibuat pada {{ $viewingComplaint->created_at->format('d M Y H:i') }}
+                    </div>
+                </div>
+            @endif
+
+            <div class="flex justify-end pt-4">
+                <flux:button wire:click="closeModal" variant="ghost">Tutup</flux:button>
+            </div>
+        </div>
+    </flux:modal>
+
     {{-- Delete Confirmation Modal --}}
     <flux:modal wire:model="showDeleteModal" name="delete-modal" class="max-w-md">
         <div class="space-y-6">
@@ -238,5 +315,6 @@
             </div>
         </div>
     </flux:modal>
+    </div>
     </div>
 </flux:main>
