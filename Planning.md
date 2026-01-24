@@ -23,6 +23,14 @@ erDiagram
         text address
         string upload_ktp "File path"
         text note
+        string province_code
+        string province
+        string regency_code
+        string regency
+        string district_code
+        string district
+        string village_code
+        string village
         timestamp created_at
         timestamp updated_at
     }
@@ -36,7 +44,9 @@ erDiagram
         string account_number "Unique"
         date opening_date
         text note
-        enum status "aktif, bermasalah, nonaktif"
+        string mobile_banking
+        string status
+        timestamp created_at
         timestamp updated_at
     }
 
@@ -44,10 +54,11 @@ erDiagram
         uuid id PK
         uuid account_id FK
         string card_number "Unique"
-        string cvv
         date expiry_date
-        string pin_hash "Encrypted"
         string card_type
+        text notes
+        timestamp created_at
+        timestamp updated_at
     }
 
     AGENTS {
@@ -56,16 +67,20 @@ erDiagram
         string agent_name
         string usertelegram
         string password "Hashed"
+        timestamp created_at
+        timestamp updated_at
     }
 
     COMPLAINTS {
         uuid id PK
         uuid customer_id FK
         uuid agent_id FK
+        uuid account_id FK
         string subject
         text description
-        enum status "pending, processing, resolved"
+        string status
         timestamp created_at
+        timestamp updated_at
     }
 ```
 
@@ -75,6 +90,7 @@ erDiagram
 - **Primary Key**: Use UUID for all tables.
 - **Timestamps**: All tables must include `created_at` and `updated_at`.
 - **Storage**: `upload_ktp` should store a relative path using Laravel's Storage facade.
+- **Regional Data**: `CUSTOMERS` table includes province, regency, district, and village columns (both code and name).
 
 ### 2. Backend Framework
 - **Framework**: Laravel 12.
@@ -93,12 +109,12 @@ Instructions for Cursor/IDE: Please execute the following tasks based on the sch
 
 1.  **Environment Setup**: Create migrations for all tables using UUID.
 2.  **Models**: Generate Models for `Customer`, `Account`, `Card`, `Agent`, and `Complaint`. Define the relationships (`HasMany`, `BelongsTo`).
-3.  **Security Implementation**: In the `Card` model, implement encryption for `cvv` and `pin_hash`.
+3.  **Security Implementation**: Sensitive data like `cvv` and `pin` are removed from `CARDS` table; use the `notes` field to store sensitive information securely.
 4.  **Filament Resources**:
-    -   Create `CustomerResource` with FileUpload for KTP.
-    -   Create `AccountResource` with a Select for Customer and Agent.
-    -   Create `CardResource` or a RelationManager inside `AccountResource`.
-    -   Create `ComplaintResource` with a status badge (pending = gray, processing = blue, resolved = green).
+    -   Create `CustomerResource` with FileUpload for KTP and regional data fields.
+    -   Create `AccountResource` with a Select for Customer and Agent, and include Mobile Banking field.
+    -   Create `CardResource` or a RelationManager inside `AccountResource`. Use `notes` field for sensitive data.
+    -   Create `ComplaintResource` with a status badge (pending = gray, processing = blue, resolved = green) and link to Account.
 5.  **UI/UX**: Ensure all tables have a Search and Filter feature, especially for NIK, Account Number, and Agent Code.
 
 ## Specific Data Sample for Testing
@@ -109,3 +125,38 @@ Instructions for Cursor/IDE: Please execute the following tasks based on the sch
     -   **Account**: `1250016567422`
     -   **Branch**: Subang
     -   **Date**: 22 Dec 2002
+
+## Database Changes Notes
+
+### Changes from Original Schema:
+
+1. **CUSTOMERS Table**:
+   - Added regional data columns: `province_code`, `province`, `regency_code`, `regency`, `district_code`, `district`, `village_code`, `village`
+
+2. **ACCOUNTS Table**:
+   - Added `created_at` timestamp
+   - Added `mobile_banking` column (text) for mobile banking information
+   - Status is stored as `varchar` instead of `enum`
+
+3. **CARDS Table**:
+   - **IMPORTANT**: Removed `cvv` and `pin` columns for security reasons
+   - Replaced with `notes` column (text) to store sensitive information securely
+   - Added `created_at` and `updated_at` timestamps
+
+4. **AGENTS Table**:
+   - Added `created_at` and `updated_at` timestamps
+
+5. **COMPLAINTS Table**:
+   - Added `account_id` foreign key to link complaints to specific accounts
+   - Added `updated_at` timestamp
+   - Status is stored as `varchar` instead of `enum`
+
+### Security Notes:
+- Sensitive card data (CVV, PIN) should be stored securely in the `notes` field with proper encryption if needed
+- All foreign keys have appropriate cascade/delete behaviors:
+  - `accounts.customer_id`: CASCADE on delete
+  - `accounts.agent_id`: SET NULL on delete
+  - `cards.account_id`: CASCADE on delete
+  - `complaints.customer_id`: CASCADE on delete
+  - `complaints.agent_id`: SET NULL on delete
+  - `complaints.account_id`: CASCADE on delete
