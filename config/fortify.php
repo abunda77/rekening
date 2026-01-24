@@ -144,7 +144,7 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        ...(filter_var(env('FORTIFY_REGISTRATION', true), FILTER_VALIDATE_BOOLEAN) ? [Features::registration()] : []),
         Features::resetPasswords(),
         Features::emailVerification(),
         // Features::updateProfileInformation(),
