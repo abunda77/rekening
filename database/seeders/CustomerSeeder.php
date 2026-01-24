@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Customer;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class CustomerSeeder extends Seeder
 {
@@ -12,6 +13,9 @@ class CustomerSeeder extends Seeder
      */
     public function run(): void
     {
+        Schema::disableForeignKeyConstraints();
+        Customer::truncate();
+        Schema::enableForeignKeyConstraints();
         // Create specific customer from Planning.md
         Customer::create([
             'nik' => '3213096212020011',

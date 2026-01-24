@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Agent;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class AgentSeeder extends Seeder
 {
@@ -13,7 +14,9 @@ class AgentSeeder extends Seeder
     public function run(): void
     {
         // Hapus semua data dulu
+        Schema::disableForeignKeyConstraints();
         Agent::truncate();
+        Schema::enableForeignKeyConstraints();
 
         // Create specific agent first
         Agent::create([

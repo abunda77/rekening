@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Account;
 use App\Models\Card;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class CardSeeder extends Seeder
 {
@@ -13,6 +14,9 @@ class CardSeeder extends Seeder
      */
     public function run(): void
     {
+        Schema::disableForeignKeyConstraints();
+        Card::truncate();
+        Schema::enableForeignKeyConstraints();
         // Create cards for each account
         $accounts = Account::all();
 

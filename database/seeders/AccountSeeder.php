@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Agent;
 use App\Models\Customer;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class AccountSeeder extends Seeder
 {
@@ -14,6 +15,9 @@ class AccountSeeder extends Seeder
      */
     public function run(): void
     {
+        Schema::disableForeignKeyConstraints();
+        Account::truncate();
+        Schema::enableForeignKeyConstraints();
         // Get Wimpi Gindasari customer
         $wimpi = Customer::where('nik', '3213096212020011')->first();
         $agent = Agent::first();

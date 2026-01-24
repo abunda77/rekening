@@ -6,6 +6,7 @@ use App\Models\Agent;
 use App\Models\Complaint;
 use App\Models\Customer;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class ComplaintSeeder extends Seeder
 {
@@ -14,6 +15,9 @@ class ComplaintSeeder extends Seeder
      */
     public function run(): void
     {
+        Schema::disableForeignKeyConstraints();
+        Complaint::truncate();
+        Schema::enableForeignKeyConstraints();
         $customers = Customer::all();
         $agents = Agent::all();
 
