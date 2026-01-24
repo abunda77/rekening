@@ -24,9 +24,22 @@
                     class="w-72"
                 />
             </div>
-            <flux:button wire:click="openModal" variant="primary" icon="plus">
-                Tambah Kartu
-            </flux:button>
+            <div class="flex items-center gap-2">
+                @if(!empty($selected))
+                    <flux:button wire:click="confirmBulkDelete" variant="danger" icon="trash">
+                        Hapus ({{ count($selected) }})
+                    </flux:button>
+                @endif
+                <flux:button wire:click="exportXlsx" variant="outline" icon="arrow-down-tray">
+                    XLSX
+                </flux:button>
+                <flux:button wire:click="exportPdf" variant="outline" icon="document-text">
+                    PDF
+                </flux:button>
+                <flux:button wire:click="openModal" variant="primary" icon="plus">
+                    Tambah Kartu
+                </flux:button>
+            </div>
         </div>
     </div>
 
@@ -36,6 +49,9 @@
             <table class="w-full text-left text-sm">
                 <thead class="sticky top-0 z-10 bg-gradient-to-r from-amber-600 to-orange-600 text-white">
                     <tr>
+                        <th class="p-4 w-12 text-center">
+                            <flux:checkbox wire:model.live="selectAll" />
+                        </th>
                         <th class="px-4 py-3 font-semibold cursor-pointer" wire:click="sortBy('card_number')">
                             No. Kartu
                             @if($sortField === 'card_number')
@@ -62,6 +78,9 @@
                 <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
                     @forelse($cards as $card)
                         <tr wire:key="card-{{ $card->id }}" class="hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors">
+                            <td class="p-4 text-center">
+                                <flux:checkbox wire:model.live="selected" value="{{ $card->id }}" />
+                            </td>
                             <td class="px-4 py-3 font-mono text-amber-600 dark:text-amber-400">
                                 {{ substr($card->card_number, 0, 4) }} **** **** {{ substr($card->card_number, -4) }}
                             </td>
@@ -98,7 +117,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">
+                            <td colspan="7" class="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">
                                 Tidak ada data kartu
                             </td>
                         </tr>
@@ -208,6 +227,18 @@
         </div>
     </flux:modal>
 
+    {{-- Bulk Delete Confirmation Modal --}}
+    <flux:modal wire:model="showBulkDeleteModal" name="bulk-delete-modal" class="max-w-md">
+        <div class="space-y-6">
+            <flux:heading size="lg">Konfirmasi Hapus Massal</flux:heading>
+            <flux:text>Apakah Anda yakin ingin menghapus {{ count($selected) }} kartu yang dipilih? Tindakan ini tidak dapat dibatalkan.</flux:text>
+            <div class="flex justify-end gap-3">
+                <flux:button wire:click="cancelBulkDelete" variant="ghost">Batal</flux:button>
+                <flux:button wire:click="bulkDelete" variant="danger">Hapus</flux:button>
+            </div>
+        </div>
+    </flux:modal>
+
     {{-- View Modal --}}
     <flux:modal wire:model="showViewModal" name="view-modal" class="md:w-full max-w-2xl">
         <div class="space-y-6">
@@ -268,7 +299,12 @@
                 </div>
             @endif
 
-            <div class="flex justify-end pt-4">
+            <div class="flex justify-end gap-3 pt-4">
+                @if($viewingCard)
+                    <flux:button wire:click="printDetailPdf('{{ $viewingCard->id }}')" variant="outline" icon="printer">
+                        Print PDF
+                    </flux:button>
+                @endif
                 <flux:button wire:click="closeViewModal" variant="ghost">Tutup</flux:button>
             </div>
         </div>

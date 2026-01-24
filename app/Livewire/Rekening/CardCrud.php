@@ -4,6 +4,9 @@ namespace App\Livewire\Rekening;
 
 use App\Models\Account;
 use App\Models\Card;
+use App\Exports\CardsExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -49,7 +52,15 @@ class CardCrud extends Component
 
     // Searchable Select
     public string $accountSearch = '';
+
     public bool $isSearching = false;
+
+    // Bulk Delete
+    public array $selected = [];
+
+    public bool $selectAll = false;
+
+    public bool $showBulkDeleteModal = false;
 
     protected function rules(): array
     {
@@ -70,7 +81,7 @@ class CardCrud extends Component
     public function updatedAccountSearch(): void
     {
         // Jika user mengetik, kita buka dropdown dan reset pilihan (opsional, tergantung UX yg dimau)
-        // Disini kita biarkan account_id tetap kecuali user memilih ulang, 
+        // Disini kita biarkan account_id tetap kecuali user memilih ulang,
         // tapi visual indikasi nanti ada di UI
         $this->isSearching = true;
     }
@@ -101,12 +112,12 @@ class CardCrud extends Component
         if ($id) {
             $card = Card::findOrFail($id);
             $this->account_id = $card->account_id;
-            
+
             // Set initial search text for display
             if ($card->account) {
                 $this->accountSearch = "{$card->account->bank_name} - {$card->account->account_number} ({$card->account->customer?->full_name})";
             }
-            
+
             $this->card_number = $card->card_number;
             $this->expiry_date = $card->expiry_date?->format('Y-m-d');
             $this->card_type = $card->card_type ?? '';
@@ -185,9 +196,9 @@ class CardCrud extends Component
         $this->viewingCard = null;
     }
 
-    public function render()
+    public function getRowsQuery()
     {
-        $cards = Card::query()
+        return Card::query()
             ->with(['account.customer'])
             ->when($this->search, function ($query) {
                 $query->where('card_number', 'like', '%'.$this->search.'%')
@@ -197,18 +208,86 @@ class CardCrud extends Component
                             ->orWhere('bank_name', 'like', '%'.$this->search.'%');
                     });
             })
-            ->orderBy($this->sortField, $this->sortDirection)
-            ->paginate($this->perPage);
+            ->orderBy($this->sortField, $this->sortDirection);
+    }
+
+    public function updatedSelectAll($value): void
+    {
+        if ($value) {
+            $this->selected = $this->getRowsQuery()->paginate($this->perPage)->pluck('id')->map(fn ($id) => (string) $id)->toArray();
+        } else {
+            $this->selected = [];
+        }
+    }
+
+    public function updatedSelected(): void
+    {
+        $this->selectAll = false;
+    }
+
+    public function confirmBulkDelete(): void
+    {
+        if (! empty($this->selected)) {
+            $this->showBulkDeleteModal = true;
+        }
+    }
+
+    public function bulkDelete(): void
+    {
+        Card::whereIn('id', $this->selected)->delete();
+
+        session()->flash('success', count($this->selected).' kartu berhasil dihapus.');
+
+        $this->selected = [];
+        $this->selectAll = false;
+        $this->showBulkDeleteModal = false;
+    }
+
+    public function cancelBulkDelete(): void
+    {
+        $this->showBulkDeleteModal = false;
+    }
+
+    public function exportXlsx()
+    {
+        return Excel::download(new CardsExport, 'cards.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $cards = Card::query()->with(['account.customer'])->latest()->get();
+        $pdf = Pdf::loadView('exports.cards-pdf', ['cards' => $cards]);
+        $pdf->setPaper('a4', 'landscape');
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'cards.pdf');
+    }
+
+    public function printDetailPdf(string $id)
+    {
+        $card = Card::with(['account.customer'])->findOrFail($id);
+        $pdf = Pdf::loadView('exports.card-detail-pdf', ['card' => $card]);
+        $pdf->setPaper('a4', 'portrait');
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'card_' . $card->card_number . '.pdf');
+    }
+
+    public function render()
+    {
+        $cards = $this->getRowsQuery()->paginate($this->perPage);
 
         // Logic pencarian akun untuk dropdown
         $searchedAccounts = [];
         if (strlen($this->accountSearch) >= 2) {
-             $searchedAccounts = Account::query()
+            $searchedAccounts = Account::query()
                 ->with('customer')
-                ->where('account_number', 'like', '%' . $this->accountSearch . '%')
-                ->orWhere('bank_name', 'like', '%' . $this->accountSearch . '%')
+                ->where('account_number', 'like', '%'.$this->accountSearch.'%')
+                ->orWhere('bank_name', 'like', '%'.$this->accountSearch.'%')
                 ->orWhereHas('customer', function ($q) {
-                    $q->where('full_name', 'like', '%' . $this->accountSearch . '%');
+                    $q->where('full_name', 'like', '%'.$this->accountSearch.'%');
                 })
                 ->limit(10)
                 ->get();

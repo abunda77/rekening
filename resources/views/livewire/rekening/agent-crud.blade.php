@@ -25,9 +25,16 @@
                     class="w-64"
                 />
             </div>
-            <flux:button wire:click="openModal" variant="primary" icon="plus">
-                Tambah Agent
-            </flux:button>
+            <div class="flex items-center gap-2">
+                @if(!empty($selected))
+                    <flux:button wire:click="confirmBulkDelete" variant="danger" icon="trash">
+                        Hapus ({{ count($selected) }})
+                    </flux:button>
+                @endif
+                <flux:button wire:click="openModal" variant="primary" icon="plus">
+                    Tambah Agent
+                </flux:button>
+            </div>
         </div>
     </div>
 
@@ -37,6 +44,9 @@
             <table class="w-full text-left text-sm">
                 <thead class="sticky top-0 z-10 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
                     <tr>
+                        <th class="p-4 w-12 text-center">
+                            <flux:checkbox wire:model.live="selectAll" />
+                        </th>
                         <th class="px-4 py-3 font-semibold cursor-pointer" wire:click="sortBy('agent_code')">
                             Kode Agent
                             @if($sortField === 'agent_code')
@@ -62,6 +72,9 @@
                 <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
                     @forelse($agents as $agent)
                         <tr wire:key="agent-{{ $agent->id }}" class="hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors">
+                            <td class="p-4 text-center">
+                                <flux:checkbox wire:model.live="selected" value="{{ $agent->id }}" />
+                            </td>
                             <td class="px-4 py-3 font-mono text-indigo-600 dark:text-indigo-400">{{ $agent->agent_code }}</td>
                             <td class="px-4 py-3 font-medium text-zinc-900 dark:text-zinc-100">{{ $agent->agent_name }}</td>
                             <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400">{{ $agent->usertelegram ?? '-' }}</td>
@@ -75,7 +88,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">
+                            <td colspan="6" class="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">
                                 Tidak ada data agent
                             </td>
                         </tr>
@@ -139,6 +152,18 @@
             <div class="flex justify-end gap-3">
                 <flux:button wire:click="cancelDelete" variant="ghost">Batal</flux:button>
                 <flux:button wire:click="delete" variant="danger">Hapus</flux:button>
+            </div>
+        </div>
+    </flux:modal>
+
+    {{-- Bulk Delete Confirmation Modal --}}
+    <flux:modal wire:model="showBulkDeleteModal" name="bulk-delete-modal" class="max-w-md">
+        <div class="space-y-6">
+            <flux:heading size="lg">Konfirmasi Hapus Massal</flux:heading>
+            <flux:text>Apakah Anda yakin ingin menghapus {{ count($selected) }} agent yang dipilih? Tindakan ini tidak dapat dibatalkan.</flux:text>
+            <div class="flex justify-end gap-3">
+                <flux:button wire:click="cancelBulkDelete" variant="ghost">Batal</flux:button>
+                <flux:button wire:click="bulkDelete" variant="danger">Hapus</flux:button>
             </div>
         </div>
     </flux:modal>

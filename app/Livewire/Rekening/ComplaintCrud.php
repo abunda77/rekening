@@ -45,6 +45,13 @@ class ComplaintCrud extends Component
 
     public ?string $deleteId = null;
 
+    // Bulk Delete
+    public array $selected = [];
+
+    public bool $selectAll = false;
+
+    public bool $showBulkDeleteModal = false;
+
     protected function rules(): array
     {
         return [
@@ -155,9 +162,9 @@ class ComplaintCrud extends Component
         $this->deleteId = null;
     }
 
-    public function render()
+    public function getRowsQuery()
     {
-        $complaints = Complaint::query()
+        return Complaint::query()
             ->with(['customer', 'agent'])
             ->when($this->search, function ($query) {
                 $query->where('subject', 'like', '%'.$this->search.'%')
@@ -169,8 +176,49 @@ class ComplaintCrud extends Component
             ->when($this->filterStatus, function ($query) {
                 $query->where('status', $this->filterStatus);
             })
-            ->orderBy($this->sortField, $this->sortDirection)
-            ->paginate($this->perPage);
+            ->orderBy($this->sortField, $this->sortDirection);
+    }
+
+    public function updatedSelectAll($value): void
+    {
+        if ($value) {
+            $this->selected = $this->getRowsQuery()->paginate($this->perPage)->pluck('id')->map(fn ($id) => (string) $id)->toArray();
+        } else {
+            $this->selected = [];
+        }
+    }
+
+    public function updatedSelected(): void
+    {
+        $this->selectAll = false;
+    }
+
+    public function confirmBulkDelete(): void
+    {
+        if (! empty($this->selected)) {
+            $this->showBulkDeleteModal = true;
+        }
+    }
+
+    public function bulkDelete(): void
+    {
+        Complaint::whereIn('id', $this->selected)->delete();
+
+        session()->flash('success', count($this->selected).' pengaduan berhasil dihapus.');
+
+        $this->selected = [];
+        $this->selectAll = false;
+        $this->showBulkDeleteModal = false;
+    }
+
+    public function cancelBulkDelete(): void
+    {
+        $this->showBulkDeleteModal = false;
+    }
+
+    public function render()
+    {
+        $complaints = $this->getRowsQuery()->paginate($this->perPage);
 
         return view('livewire.rekening.complaint-crud', [
             'complaints' => $complaints,

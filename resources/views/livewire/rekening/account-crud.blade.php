@@ -30,8 +30,21 @@
                         <option value="nonaktif">Non-Aktif</option>
                     </flux:select>
                 </div>
-                <flux:button wire:click="openModal" variant="primary" icon="plus">
+                    <flux:button wire:click="openModal" variant="primary" icon="plus">
                     Tambah Rekening
+                </flux:button>
+            </div>
+            <div class="flex items-center gap-2 mt-4 sm:mt-0 justify-end">
+                @if(!empty($selected))
+                    <flux:button wire:click="confirmBulkDelete" variant="danger" icon="trash">
+                        Hapus ({{ count($selected) }})
+                    </flux:button>
+                @endif
+                <flux:button wire:click="exportXlsx" variant="outline" icon="arrow-down-tray">
+                    XLSX
+                </flux:button>
+                <flux:button wire:click="exportPdf" variant="outline" icon="document-text">
+                    PDF
                 </flux:button>
             </div>
         </div>
@@ -42,6 +55,9 @@
                 <table class="w-full text-left text-sm">
                     <thead class="sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
                         <tr>
+                            <th class="p-4 w-12 text-center">
+                                <flux:checkbox wire:model.live="selectAll" />
+                            </th>
                             <th class="px-4 py-3 font-semibold cursor-pointer" wire:click="sortBy('account_number')">
                                 No. Rekening
                                 @if($sortField === 'account_number')
@@ -74,6 +90,9 @@
                     <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
                         @forelse($accounts as $account)
                             <tr wire:key="account-{{ $account->id }}" class="hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors">
+                                <td class="p-4 text-center">
+                                    <flux:checkbox wire:model.live="selected" value="{{ $account->id }}" />
+                                </td>
                                 <td class="px-4 py-3 font-mono text-blue-600 dark:text-blue-400">{{ $account->account_number }}</td>
                                 <td class="px-4 py-3 font-medium text-zinc-900 dark:text-zinc-100">
                                     {{ $account->bank_name }}
@@ -112,7 +131,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">
+                                <td colspan="8" class="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">
                                     Tidak ada data rekening
                                 </td>
                             </tr>
@@ -229,6 +248,18 @@
                 </div>
             </div>
         </flux:modal>
+
+        {{-- Bulk Delete Confirmation Modal --}}
+        <flux:modal wire:model="showBulkDeleteModal" name="bulk-delete-modal" class="max-w-md">
+            <div class="space-y-6">
+                <flux:heading size="lg">Konfirmasi Hapus Massal</flux:heading>
+                <flux:text>Apakah Anda yakin ingin menghapus {{ count($selected) }} rekening yang dipilih? Semua kartu ATM terkait juga akan dihapus.</flux:text>
+                <div class="flex justify-end gap-3">
+                    <flux:button wire:click="cancelBulkDelete" variant="ghost">Batal</flux:button>
+                    <flux:button wire:click="bulkDelete" variant="danger">Hapus</flux:button>
+                </div>
+            </div>
+        </flux:modal>
         {{-- View Modal --}}
         <flux:modal wire:model="showViewModal" name="view-modal" class="md:w-full max-w-4xl">
             <div class="space-y-6">
@@ -310,7 +341,12 @@
                     </div>
                 @endif
 
-                <div class="flex justify-end pt-4">
+                <div class="flex justify-end gap-3 pt-4">
+                    @if($viewingAccount)
+                        <flux:button wire:click="printDetailPdf('{{ $viewingAccount->id }}')" variant="outline" icon="printer">
+                            Print PDF
+                        </flux:button>
+                    @endif
                     <flux:button wire:click="closeViewModal" variant="ghost">Tutup</flux:button>
                 </div>
             </div>

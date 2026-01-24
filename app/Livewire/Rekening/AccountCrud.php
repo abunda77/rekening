@@ -5,6 +5,9 @@ namespace App\Livewire\Rekening;
 use App\Models\Account;
 use App\Models\Agent;
 use App\Models\Customer;
+use App\Exports\AccountsExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -52,6 +55,13 @@ class AccountCrud extends Component
     public bool $showDeleteModal = false;
 
     public ?string $deleteId = null;
+
+    // Bulk Delete
+    public array $selected = [];
+
+    public bool $selectAll = false;
+
+    public bool $showBulkDeleteModal = false;
 
     // View Modal
     public bool $showViewModal = false;
@@ -203,9 +213,9 @@ class AccountCrud extends Component
         $this->viewingAccount = null;
     }
 
-    public function render()
+    public function getRowsQuery()
     {
-        $accounts = Account::query()
+        return Account::query()
             ->with(['customer', 'agent'])
             ->when($this->search, function ($query) {
                 $query->where('account_number', 'like', '%'.$this->search.'%')
@@ -218,8 +228,76 @@ class AccountCrud extends Component
             ->when($this->filterStatus, function ($query) {
                 $query->where('status', $this->filterStatus);
             })
-            ->orderBy($this->sortField, $this->sortDirection)
-            ->paginate($this->perPage);
+            ->orderBy($this->sortField, $this->sortDirection);
+    }
+
+    public function updatedSelectAll($value): void
+    {
+        if ($value) {
+            $this->selected = $this->getRowsQuery()->paginate($this->perPage)->pluck('id')->map(fn ($id) => (string) $id)->toArray();
+        } else {
+            $this->selected = [];
+        }
+    }
+
+    public function updatedSelected(): void
+    {
+        $this->selectAll = false;
+    }
+
+    public function confirmBulkDelete(): void
+    {
+        if (! empty($this->selected)) {
+            $this->showBulkDeleteModal = true;
+        }
+    }
+
+    public function bulkDelete(): void
+    {
+        Account::whereIn('id', $this->selected)->delete();
+
+        session()->flash('success', count($this->selected).' rekening berhasil dihapus.');
+
+        $this->selected = [];
+        $this->selectAll = false;
+        $this->showBulkDeleteModal = false;
+    }
+
+    public function cancelBulkDelete(): void
+    {
+        $this->showBulkDeleteModal = false;
+    }
+
+    public function exportXlsx()
+    {
+        return Excel::download(new AccountsExport, 'accounts.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $accounts = Account::query()->with(['customer', 'agent'])->latest()->get();
+        $pdf = Pdf::loadView('exports.accounts-pdf', ['accounts' => $accounts]);
+        $pdf->setPaper('a4', 'landscape');
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'accounts.pdf');
+    }
+
+    public function printDetailPdf(string $id)
+    {
+        $account = Account::with(['customer', 'agent'])->findOrFail($id);
+        $pdf = Pdf::loadView('exports.account-detail-pdf', ['account' => $account]);
+        $pdf->setPaper('a4', 'portrait');
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'account_' . $account->account_number . '.pdf');
+    }
+
+    public function render()
+    {
+        $accounts = $this->getRowsQuery()->paginate($this->perPage);
 
         return view('livewire.rekening.account-crud', [
             'accounts' => $accounts,

@@ -39,6 +39,13 @@ class AgentCrud extends Component
 
     public ?string $deleteId = null;
 
+    // Bulk Delete
+    public array $selected = [];
+
+    public bool $selectAll = false;
+
+    public bool $showBulkDeleteModal = false;
+
     protected function rules(): array
     {
         return [
@@ -137,16 +144,57 @@ class AgentCrud extends Component
         $this->deleteId = null;
     }
 
-    public function render()
+    public function getRowsQuery()
     {
-        $agents = Agent::query()
+        return Agent::query()
             ->when($this->search, function ($query) {
                 $query->where('agent_code', 'like', '%'.$this->search.'%')
                     ->orWhere('agent_name', 'like', '%'.$this->search.'%')
                     ->orWhere('usertelegram', 'like', '%'.$this->search.'%');
             })
-            ->orderBy($this->sortField, $this->sortDirection)
-            ->paginate($this->perPage);
+            ->orderBy($this->sortField, $this->sortDirection);
+    }
+
+    public function updatedSelectAll($value): void
+    {
+        if ($value) {
+            $this->selected = $this->getRowsQuery()->paginate($this->perPage)->pluck('id')->map(fn ($id) => (string) $id)->toArray();
+        } else {
+            $this->selected = [];
+        }
+    }
+
+    public function updatedSelected(): void
+    {
+        $this->selectAll = false;
+    }
+
+    public function confirmBulkDelete(): void
+    {
+        if (! empty($this->selected)) {
+            $this->showBulkDeleteModal = true;
+        }
+    }
+
+    public function bulkDelete(): void
+    {
+        Agent::whereIn('id', $this->selected)->delete();
+
+        session()->flash('success', count($this->selected).' agent berhasil dihapus.');
+
+        $this->selected = [];
+        $this->selectAll = false;
+        $this->showBulkDeleteModal = false;
+    }
+
+    public function cancelBulkDelete(): void
+    {
+        $this->showBulkDeleteModal = false;
+    }
+
+    public function render()
+    {
+        $agents = $this->getRowsQuery()->paginate($this->perPage);
 
         return view('livewire.rekening.agent-crud', [
             'agents' => $agents,

@@ -24,7 +24,7 @@ class CardFactory extends Factory
             'card_number' => fake()->unique()->creditCardNumber(),
             'expiry_date' => fake()->dateTimeBetween('+1 year', '+5 years')->format('Y-m-d'),
             'card_type' => fake()->randomElement($cardTypes),
-            'notes' => "CVV : " . fake()->numerify('###') . "\nPIN : " . fake()->numerify('######'),
+            'notes' => 'CVV : '.fake()->numerify('###')."\nPIN : ".fake()->numerify('######'),
         ];
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Rekening;
 
+use App\Exports\CustomersExport;
 use App\Models\Customer;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
@@ -10,6 +12,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
+use Maatwebsite\Excel\Facades\Excel;
 use Spatie\ImageOptimizer\OptimizerChainFactory;
 
 #[Layout('layouts.app.sidebar')]
@@ -78,6 +81,13 @@ class CustomerCrud extends Component
     public bool $showDeleteModal = false;
 
     public ?string $deleteId = null;
+
+    // Bulk Delete
+    public array $selected = [];
+
+    public bool $selectAll = false;
+
+    public bool $showBulkDeleteModal = false;
 
     // View Modal
     public bool $showViewModal = false;
@@ -359,17 +369,91 @@ class CustomerCrud extends Component
         $this->viewingCustomer = null;
     }
 
-    public function render()
+    public function getCustomersQuery()
     {
-        $customers = Customer::query()
+        return Customer::query()
             ->when($this->search, function ($query) {
                 $query->where('nik', 'like', '%'.$this->search.'%')
                     ->orWhere('full_name', 'like', '%'.$this->search.'%')
                     ->orWhere('email', 'like', '%'.$this->search.'%')
                     ->orWhere('phone_number', 'like', '%'.$this->search.'%');
             })
-            ->orderBy($this->sortField, $this->sortDirection)
-            ->paginate($this->perPage);
+            ->orderBy($this->sortField, $this->sortDirection);
+    }
+
+    public function updatedSelectAll($value): void
+    {
+        if ($value) {
+            $this->selected = $this->getCustomersQuery()->paginate($this->perPage)->pluck('id')->map(fn ($id) => (string) $id)->toArray();
+        } else {
+            $this->selected = [];
+        }
+    }
+
+    public function updatedSelected(): void
+    {
+        $this->selectAll = false;
+    }
+
+    public function confirmBulkDelete(): void
+    {
+        if (! empty($this->selected)) {
+            $this->showBulkDeleteModal = true;
+        }
+    }
+
+    public function bulkDelete(): void
+    {
+        $customers = Customer::whereIn('id', $this->selected)->get();
+        foreach ($customers as $customer) {
+            if ($customer->upload_ktp) {
+                Storage::disk('public')->delete($customer->upload_ktp);
+            }
+            $customer->delete();
+        }
+
+        session()->flash('success', count($this->selected).' customer berhasil dihapus.');
+
+        $this->selected = [];
+        $this->selectAll = false;
+        $this->showBulkDeleteModal = false;
+    }
+
+    public function cancelBulkDelete(): void
+    {
+        $this->showBulkDeleteModal = false;
+    }
+
+    public function exportXlsx()
+    {
+        return Excel::download(new CustomersExport, 'customers.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $customers = Customer::query()->latest()->get();
+        $pdf = Pdf::loadView('exports.customers-pdf', ['customers' => $customers]);
+        $pdf->setPaper('a4', 'landscape');
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'customers.pdf');
+    }
+
+    public function printDetailPdf(string $id)
+    {
+        $customer = Customer::findOrFail($id);
+        $pdf = Pdf::loadView('exports.customer-detail-pdf', ['customer' => $customer]);
+        $pdf->setPaper('a4', 'portrait');
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'customer_'.$customer->nik.'.pdf');
+    }
+
+    public function render()
+    {
+        $customers = $this->getCustomersQuery()->paginate($this->perPage);
 
         return view('livewire.rekening.customer-crud', [
             'customers' => $customers,
