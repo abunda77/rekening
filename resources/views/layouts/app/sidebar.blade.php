@@ -1,7 +1,14 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('partials.head')
+        <script>
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        </script>
     </head>
     <body class="min-h-screen bg-white dark:bg-zinc-800">
         <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
@@ -49,6 +56,16 @@
                 <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
                     {{ __('Documentation') }}
                 </flux:sidebar.item>
+
+                <div x-data="{ darkMode: document.documentElement.classList.contains('dark') }" x-init="darkMode = document.documentElement.classList.contains('dark')">
+                    <flux:sidebar.item icon="moon" x-show="!darkMode" x-on:click="darkMode = true; document.documentElement.classList.add('dark'); localStorage.theme = 'dark';" class="cursor-pointer">
+                        {{ __('Dark Mode') }}
+                    </flux:sidebar.item>
+
+                    <flux:sidebar.item icon="sun" x-show="darkMode" x-on:click="darkMode = false; document.documentElement.classList.remove('dark'); localStorage.theme = 'light';" class="cursor-pointer" style="display: none;">
+                        {{ __('Light Mode') }}
+                    </flux:sidebar.item>
+                </div>
             </flux:sidebar.nav>
 
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
