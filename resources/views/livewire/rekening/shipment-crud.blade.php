@@ -99,6 +99,7 @@
                                 </td>
                                 <td class="px-4 py-3 text-center">
                                     <div class="flex items-center justify-center gap-2">
+                                        <flux:button wire:click="view('{{ $shipment->id }}')" size="sm" variant="ghost" icon="eye" />
                                         <flux:button wire:click="openModal('{{ $shipment->id }}')" size="sm" variant="ghost" icon="pencil" />
                                         <flux:button wire:click="confirmDelete('{{ $shipment->id }}')" size="sm" variant="ghost" icon="trash" class="text-red-500 hover:text-red-700" />
                                     </div>
@@ -275,6 +276,71 @@
 
                 <div class="flex justify-end pt-4 border-t border-zinc-200 dark:border-zinc-700">
                     <flux:button wire:click="closeTrackingModal" variant="primary">Tutup</flux:button>
+                </div>
+            </div>
+        </flux:modal>
+
+        {{-- View Modal --}}
+        <flux:modal wire:model="showViewModal" name="view-modal" class="max-w-2xl">
+            <div class="space-y-6">
+                <div class="flex items-center justify-between border-b border-zinc-200 pb-4 dark:border-zinc-700">
+                    <flux:heading size="lg">Detail Pengiriman</flux:heading>
+                    <flux:button wire:click="closeViewModal" variant="ghost" icon="x-mark" size="sm" />
+                </div>
+
+                @if($viewShipment)
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <div class="text-sm text-zinc-500">Agent</div>
+                            <div class="font-medium">{{ $viewShipment->agent?->agent_name ?? '-' }}</div>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="text-sm text-zinc-500">No. Rekening</div>
+                            <div class="font-mono font-medium">{{ $viewShipment->account?->account_number ?? '-' }}</div>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="text-sm text-zinc-500">Tanggal Pengiriman</div>
+                            <div class="font-medium">{{ $viewShipment->delivery_date?->format('d M Y') ?? '-' }}</div>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="text-sm text-zinc-500">Ekspedisi</div>
+                            <div class="font-medium">{{ $viewShipment->expedition }}</div>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="text-sm text-zinc-500">Status</div>
+                            @switch($viewShipment->status)
+                                @case('SENT')
+                                    <flux:badge color="blue">Sent</flux:badge>
+                                    @break
+                                @case('PROCESS')
+                                    <flux:badge color="yellow">Process</flux:badge>
+                                    @break
+                                @case('OTW')
+                                    <flux:badge color="green">On The Way</flux:badge>
+                                    @break
+                            @endswitch
+                        </div>
+                        <div class="space-y-1">
+                            <div class="text-sm text-zinc-500">No. Resi</div>
+                            <div class="font-mono font-medium">{{ $viewShipment->receipt_number ?? '-' }}</div>
+                        </div>
+                        <div class="col-span-2 space-y-1">
+                            <div class="text-sm text-zinc-500">Catatan</div>
+                            <div class="text-sm">{{ $viewShipment->note ?? '-' }}</div>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="text-sm text-zinc-500">Tanggal Dibuat</div>
+                            <div class="text-sm">{{ $viewShipment->created_at->format('d M Y H:i') }}</div>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="text-sm text-zinc-500">Terakhir Diperbarui</div>
+                            <div class="text-sm">{{ $viewShipment->updated_at->format('d M Y H:i') }}</div>
+                        </div>
+                    </div>
+                @endif
+
+                <div class="flex justify-end pt-4 border-t border-zinc-200 dark:border-zinc-700">
+                    <flux:button wire:click="closeViewModal" variant="primary">Tutup</flux:button>
                 </div>
             </div>
         </flux:modal>

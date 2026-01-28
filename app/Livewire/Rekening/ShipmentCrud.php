@@ -58,8 +58,15 @@ class ShipmentCrud extends Component
 
     // Tracking
     public bool $showTrackingModal = false;
+
     public ?array $trackingResult = null;
+
     public bool $isLoadingTracking = false;
+
+    // View
+    public bool $showViewModal = false;
+
+    public ?Shipment $viewShipment = null;
 
     protected function rules(): array
     {
@@ -179,9 +186,10 @@ class ShipmentCrud extends Component
     public function trackShipment(string $id): void
     {
         $shipment = Shipment::findOrFail($id);
-        
-        if (!$shipment->receipt_number || !$shipment->expedition) {
+
+        if (! $shipment->receipt_number || ! $shipment->expedition) {
             $this->js("Flux.toast({ text: 'Nomor resi atau ekspedisi belum diisi.', variant: 'danger' })");
+
             return;
         }
 
@@ -195,8 +203,8 @@ class ShipmentCrud extends Component
         if (isset($result['status']['code']) && $result['status']['code'] == 200) {
             $this->trackingResult = $result['data'];
         } else {
-             $message = $result['status']['message'] ?? 'Gagal melacak resi.';
-             $this->trackingResult = ['error' => $message];
+            $message = $result['status']['message'] ?? 'Gagal melacak resi.';
+            $this->trackingResult = ['error' => $message];
         }
 
         $this->isLoadingTracking = false;
@@ -206,6 +214,18 @@ class ShipmentCrud extends Component
     {
         $this->showTrackingModal = false;
         $this->trackingResult = null;
+    }
+
+    public function view(string $id): void
+    {
+        $this->viewShipment = Shipment::with(['agent', 'account'])->findOrFail($id);
+        $this->showViewModal = true;
+    }
+
+    public function closeViewModal(): void
+    {
+        $this->showViewModal = false;
+        $this->viewShipment = null;
     }
 
     public function getRowsQuery()
@@ -232,8 +252,8 @@ class ShipmentCrud extends Component
         return view('livewire.rekening.shipment-crud', [
             'shipments' => $shipments,
             'agents' => Agent::orderBy('agent_name')->get(),
-            'accounts' => $this->agent_id 
-                ? Account::where('agent_id', $this->agent_id)->orderBy('account_number')->get() 
+            'accounts' => $this->agent_id
+                ? Account::where('agent_id', $this->agent_id)->orderBy('account_number')->get()
                 : collect(),
             'couriers' => $this->klikResiService->getCouriers(),
         ]);
