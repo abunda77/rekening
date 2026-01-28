@@ -25,9 +25,11 @@ class Account extends Model
         'branch',
         'account_number',
         'opening_date',
+        'expired_on',
         'note',
         'status',
         'mobile_banking',
+        'cover_buku',
     ];
 
     /**
@@ -39,6 +41,7 @@ class Account extends Model
     {
         return [
             'opening_date' => 'date',
+            'expired_on' => 'date',
         ];
     }
 

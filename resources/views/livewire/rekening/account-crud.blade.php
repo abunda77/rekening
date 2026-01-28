@@ -84,6 +84,12 @@
                                     <span class="ml-1">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
                                 @endif
                             </th>
+                            <th class="px-4 py-3 font-semibold cursor-pointer" wire:click="sortBy('expired_on')">
+                                Tgl Berakhir
+                                @if($sortField === 'expired_on')
+                                    <span class="ml-1">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                                @endif
+                            </th>
                             <th class="px-4 py-3 font-semibold text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -121,6 +127,9 @@
                                 <td class="px-4 py-3 text-zinc-500 dark:text-zinc-400">
                                     {{ $account->opening_date?->format('d M Y') ?? '-' }}
                                 </td>
+                                <td class="px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                                    {{ $account->expired_on?->format('d M Y') ?? '-' }}
+                                </td>
                                 <td class="px-4 py-3 text-center">
                                     <div class="flex items-center justify-center gap-2">
                                         <flux:button wire:click="view('{{ $account->id }}')" size="sm" variant="ghost" icon="eye" />
@@ -131,7 +140,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">
+                                <td colspan="9" class="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">
                                     Tidak ada data rekening
                                 </td>
                             </tr>
@@ -205,6 +214,12 @@
                         </flux:field>
 
                         <flux:field>
+                            <flux:label>Tanggal Berakhir (Kerjasama)</flux:label>
+                            <flux:input wire:model="expired_on" type="date" />
+                            <flux:error name="expired_on" />
+                        </flux:field>
+
+                        <flux:field>
                             <flux:label>Status</flux:label>
                             <flux:select wire:model="status">
                                 <option value="aktif">Aktif</option>
@@ -225,6 +240,35 @@
                         <flux:label>Catatan</flux:label>
                         <flux:textarea wire:model="note" placeholder="Catatan tambahan (opsional)" rows="2" />
                         <flux:error name="note" />
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>Cover Buku Tabungan</flux:label>
+                        <flux:input type="file" wire:model="cover_buku" accept="image/*" />
+                        <flux:error name="cover_buku" />
+
+                        @php
+                            $previewUrl = null;
+                            if ($cover_buku && method_exists($cover_buku, 'temporaryUrl')) {
+                                try {
+                                    $previewUrl = $cover_buku->temporaryUrl();
+                                } catch (\Throwable $e) {
+                                    // Ignore error
+                                }
+                            }
+                        @endphp
+
+                        @if ($previewUrl)
+                            <div class="mt-2">
+                                <span class="text-xs text-zinc-500">Preview:</span>
+                                <img src="{{ $previewUrl }}" class="h-32 w-auto rounded-lg border border-zinc-200 object-cover mt-1 dark:border-zinc-700">
+                            </div>
+                        @elseif ($editId && \App\Models\Account::find($editId)->cover_buku)
+                            <div class="mt-2">
+                                <span class="text-xs text-zinc-500">Saat ini:</span>
+                                <img src="{{ asset('storage/' . \App\Models\Account::find($editId)->cover_buku) }}" class="h-32 w-auto rounded-lg border border-zinc-200 object-cover mt-1 dark:border-zinc-700">
+                            </div>
+                        @endif
                     </flux:field>
 
                     <div class="flex justify-end gap-3 pt-4">
@@ -319,6 +363,40 @@
                             <p class="text-base text-zinc-900 dark:text-zinc-100">{{ $viewingAccount->opening_date?->format('d M Y') ?? '-' }}</p>
                         </div>
 
+                        <div class="space-y-1">
+                            <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Tanggal Berakhir</span>
+                            <p class="text-base text-zinc-900 dark:text-zinc-100">{{ $viewingAccount->expired_on?->format('d M Y') ?? '-' }}</p>
+                            
+                            @if($viewingAccount->expired_on)
+                                @php
+                                    $today = \Carbon\Carbon::now()->startOfDay();
+                                    $expiredDate = \Carbon\Carbon::parse($viewingAccount->expired_on)->startOfDay();
+                                    $daysRemaining = (int) floor($today->diffInDays($expiredDate, false));
+                                    $isExpired = $daysRemaining < 0;
+                                    $absdays = abs($daysRemaining);
+                                    
+                                    // Determine badge color based on days remaining
+                                    if ($isExpired) {
+                                        $badgeColor = 'red';
+                                        $badgeText = 'Sudah Berakhir ' . $absdays . ' hari yang lalu';
+                                    } elseif ($daysRemaining <= 7) {
+                                        $badgeColor = 'orange';
+                                        $badgeText = 'Berakhir minggu ini (' . $daysRemaining . ' hari lagi)';
+                                    } elseif ($daysRemaining <= 30) {
+                                        $badgeColor = 'yellow';
+                                        $badgeText = 'Berakhir bulan ini (' . $daysRemaining . ' hari lagi)';
+                                    } else {
+                                        $badgeColor = 'green';
+                                        $badgeText = 'Masih ' . $daysRemaining . ' hari lagi';
+                                    }
+                                @endphp
+                                
+                                <div class="mt-2">
+                                    <flux:badge color="{{ $badgeColor }}">{{ $badgeText }}</flux:badge>
+                                </div>
+                            @endif
+                        </div>
+
                         <div class="md:col-span-2 space-y-1">
                             <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Mobile Banking</span>
                             <p class="text-base text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap">{{ $viewingAccount->mobile_banking ?? '-' }}</p>
@@ -338,6 +416,15 @@
                             <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Diperbarui Pada</span>
                             <p class="text-base text-zinc-900 dark:text-zinc-100">{{ $viewingAccount->updated_at->format('d M Y H:i') }}</p>
                         </div>
+                        
+                        @if($viewingAccount->cover_buku)
+                            <div class="md:col-span-2 space-y-1">
+                                <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Cover Buku Tabungan</span>
+                                <div class="mt-2">
+                                    <img src="{{ asset('storage/' . $viewingAccount->cover_buku) }}" class="max-h-64 w-auto rounded-lg border border-zinc-200 object-cover dark:border-zinc-700" alt="Cover Buku">
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 @endif
 

@@ -5,6 +5,8 @@ use App\Models\Account;
 use App\Models\Agent;
 use App\Models\Customer;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
@@ -89,4 +91,40 @@ it('can delete an account', function () {
         ->assertHasNoErrors();
 
     $this->assertDatabaseMissing('accounts', ['id' => $account->id]);
+});
+
+it('can upload cover book image', function () {
+    Storage::fake('public');
+
+    $file = UploadedFile::fake()->image('cover.jpg');
+
+    Livewire::actingAs($this->user)
+        ->test(AccountCrud::class)
+        ->call('openModal')
+        ->set('customer_id', $this->customer->id)
+        ->set('agent_id', $this->agent->id)
+        ->set('bank_name', 'BCA')
+        ->set('account_number', '1231231234')
+        ->set('status', 'aktif')
+        ->set('cover_buku', $file)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $account = Account::where('account_number', '1231231234')->first();
+
+    expect($account->cover_buku)->not->toBeNull();
+    Storage::disk('public')->assertExists($account->cover_buku);
+});
+
+it('validates cover book image', function () {
+    // Storage::fake('public');
+
+    $file = UploadedFile::fake()->create('document.pdf', 100);
+
+    Livewire::actingAs($this->user)
+        ->test(AccountCrud::class)
+        ->call('openModal')
+        ->set('cover_buku', $file)
+        ->call('save')
+        ->assertHasErrors(['cover_buku']);
 });

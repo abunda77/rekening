@@ -45,6 +45,10 @@
                 <div class="value">{{ $account->opening_date ? $account->opening_date->format('d M Y') : '-' }}</div>
             </div>
             <div class="row">
+                <div class="label">Tanggal Berakhir</div>
+                <div class="value">{{ $account->expired_on ? $account->expired_on->format('d M Y') : '-' }}</div>
+            </div>
+            <div class="row">
                 <div class="label">Status</div>
                 <div class="value">{{ ucfirst($account->status) }}</div>
             </div>

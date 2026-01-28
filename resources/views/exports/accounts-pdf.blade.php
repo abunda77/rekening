@@ -22,6 +22,7 @@
                 <th>NIK</th>
                 <th>Status</th>
                 <th>Tgl Buka</th>
+                <th>Tgl Berakhir</th>
             </tr>
         </thead>
         <tbody>
@@ -34,6 +35,7 @@
                 <td>{{ $account->customer ? $account->customer->nik : '-' }}</td>
                 <td>{{ ucfirst($account->status) }}</td>
                 <td>{{ $account->opening_date ? $account->opening_date->format('d M Y') : '-' }}</td>
+                <td>{{ $account->expired_on ? $account->expired_on->format('d M Y') : '-' }}</td>
             </tr>
             @endforeach
         </tbody>

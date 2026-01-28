@@ -10,6 +10,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -17,7 +18,7 @@ use Maatwebsite\Excel\Facades\Excel;
 #[Title('Manajemen Rekening')]
 class AccountCrud extends Component
 {
-    use WithPagination;
+    use WithFileUploads, WithPagination;
 
     public string $search = '';
 
@@ -44,9 +45,13 @@ class AccountCrud extends Component
 
     public ?string $opening_date = null;
 
+    public ?string $expired_on = null;
+
     public string $note = '';
 
     public ?string $mobile_banking = '';
+
+    public $cover_buku; // File upload property
 
     public string $status = 'aktif';
 
@@ -96,8 +101,10 @@ class AccountCrud extends Component
             'branch' => 'nullable|string|max:100',
             'account_number' => 'required|string|max:50|unique:accounts,account_number,'.$this->editId,
             'opening_date' => 'nullable|date',
+            'expired_on' => 'nullable|date|after_or_equal:opening_date',
             'note' => 'nullable|string',
             'mobile_banking' => 'nullable|string',
+            'cover_buku' => 'nullable|image|max:2048', // 2MB Max
             'status' => 'required|in:aktif,bermasalah,nonaktif',
         ];
     }
@@ -135,11 +142,12 @@ class AccountCrud extends Component
             $this->branch = $account->branch ?? '';
             $this->account_number = $account->account_number;
             $this->opening_date = $account->opening_date?->format('Y-m-d');
+            $this->expired_on = $account->expired_on?->format('Y-m-d');
             $this->note = $account->note ?? '';
             $this->mobile_banking = $account->mobile_banking ?? '';
             $this->status = $account->status;
         } else {
-            $this->reset(['customer_id', 'agent_id', 'bank_name', 'branch', 'account_number', 'opening_date', 'note', 'mobile_banking']);
+            $this->reset(['customer_id', 'agent_id', 'bank_name', 'branch', 'account_number', 'opening_date', 'expired_on', 'note', 'mobile_banking', 'cover_buku']);
             $this->status = 'aktif';
         }
 
@@ -149,7 +157,7 @@ class AccountCrud extends Component
     public function closeModal(): void
     {
         $this->showModal = false;
-        $this->reset(['editId', 'customer_id', 'agent_id', 'bank_name', 'branch', 'account_number', 'opening_date', 'note', 'mobile_banking', 'status']);
+        $this->reset(['editId', 'customer_id', 'agent_id', 'bank_name', 'branch', 'account_number', 'opening_date', 'expired_on', 'note', 'mobile_banking', 'status', 'cover_buku']);
         $this->resetValidation();
     }
 
@@ -164,10 +172,15 @@ class AccountCrud extends Component
             'branch' => $this->branch ?: null,
             'account_number' => $this->account_number,
             'opening_date' => $this->opening_date ?: null,
+            'expired_on' => $this->expired_on ?: null,
             'note' => $this->note ?: null,
             'mobile_banking' => $this->mobile_banking ?: null,
             'status' => $this->status,
         ];
+
+        if ($this->cover_buku) {
+            $data['cover_buku'] = $this->cover_buku->store('accounts', 'public');
+        }
 
         if ($this->editId) {
             Account::findOrFail($this->editId)->update($data);
