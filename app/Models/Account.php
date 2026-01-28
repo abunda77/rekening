@@ -74,4 +74,14 @@ class Account extends Model
     {
         return $this->hasMany(Card::class);
     }
+
+    /**
+     * Get shipments associated with this account.
+     *
+     * @return HasMany<Shipment, $this>
+     */
+    public function shipments(): HasMany
+    {
+        return $this->hasMany(Shipment::class);
+    }
 }

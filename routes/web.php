@@ -1,12 +1,13 @@
 <?php
 
+use App\Livewire\Agent\Auth\Login as AgentLogin;
+use App\Livewire\Agent\Dashboard as AgentDashboard;
 use App\Livewire\Rekening\AccountCrud;
 use App\Livewire\Rekening\AgentCrud;
 use App\Livewire\Rekening\CardCrud;
 use App\Livewire\Rekening\ComplaintCrud;
 use App\Livewire\Rekening\CustomerCrud;
-use App\Livewire\Agent\Auth\Login as AgentLogin;
-use App\Livewire\Agent\Dashboard as AgentDashboard;
+use App\Livewire\Rekening\ShipmentCrud;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -24,6 +25,7 @@ Route::middleware(['auth', 'verified'])->prefix('rekening')->group(function () {
     Route::get('/accounts', AccountCrud::class)->name('rekening.accounts');
     Route::get('/cards', CardCrud::class)->name('rekening.cards');
     Route::get('/complaints', ComplaintCrud::class)->name('rekening.complaints');
+    Route::get('/shipments', ShipmentCrud::class)->name('rekening.shipments');
 });
 
 // Agent Portal Routes

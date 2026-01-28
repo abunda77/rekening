@@ -43,6 +43,9 @@
                     <flux:sidebar.item icon="chat-bubble-left-right" :href="route('rekening.complaints')" :current="request()->routeIs('rekening.complaints')" wire:navigate>
                         {{ __('Help Desk') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="truck" :href="route('rekening.shipments')" :current="request()->routeIs('rekening.shipments')" wire:navigate>
+                        {{ __('Shipment') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
