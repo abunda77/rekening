@@ -29,7 +29,7 @@ class HelpDesk extends Component
     // Form fields
     public ?string $editId = null;
 
-    public string $account_id = '';
+    public ?string $account_id = '';
 
     // agent_id is auto-filled
 
@@ -51,6 +51,10 @@ class HelpDesk extends Component
     public bool $selectAll = false;
 
     public bool $showBulkDeleteModal = false;
+
+    // View Modal
+    public bool $showViewModal = false;
+    public ?Complaint $viewComplaint = null;
 
     protected function rules(): array
     {
@@ -161,6 +165,20 @@ class HelpDesk extends Component
     {
         $this->showDeleteModal = false;
         $this->deleteId = null;
+    }
+
+    public function openViewModal(string $id): void
+    {
+        $this->viewComplaint = Complaint::where('agent_id', Auth::guard('agent')->id())
+            ->with(['customer', 'account']) // Eager load relationships
+            ->findOrFail($id);
+        $this->showViewModal = true;
+    }
+
+    public function closeViewModal(): void
+    {
+        $this->showViewModal = false;
+        $this->viewComplaint = null;
     }
 
     public function getRowsQuery()

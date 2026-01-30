@@ -67,9 +67,9 @@
                      @if (Route::has('login'))
                         <div class="flex items-center gap-4">
                             @auth
-                                <a href="{{ url('/dashboard') }}" class="px-5 py-2.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-all ring-1 ring-white/10 hover:ring-white/30">Dashboard</a>
+                                <a href="{{ url('/agent/dashboard') }}" class="px-5 py-2.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-all ring-1 ring-white/10 hover:ring-white/30">Dashboard</a>
                             @else
-                                <a href="{{ route('login') }}" class="text-sm font-medium hover:text-white transition-colors">Log in</a>
+                                <a href="{{ url('/agent/login') }}" class="text-sm font-medium hover:text-white transition-colors">Log in</a>
                                 @if (Route::has('register'))
                                     <a href="{{ route('register') }}" class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-sm font-medium shadow-lg shadow-blue-500/25 transition-all transform hover:scale-105 active:scale-95">Get Started</a>
                                 @endif

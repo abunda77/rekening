@@ -166,6 +166,12 @@
                                         </td>
                                         <td class="px-6 py-4 text-center">
                                             <div class="flex items-center justify-center gap-2">
+                                                <button wire:click="openViewModal('{{ $complaint->id }}')" class="text-slate-400 hover:text-green-600 dark:hover:text-green-400 transition-colors" title="Lihat Detail">
+                                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                    </svg>
+                                                </button>
                                                 <button wire:click="openModal('{{ $complaint->id }}')" class="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                                                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -279,6 +285,72 @@
                             <button wire:click="bulkDelete" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
                                 Hapus
                             </button>
+                        </div>
+                    </div>
+                </x-modal>
+
+                {{-- View Detail Modal --}}
+                <x-modal name="view-modal" :show="$showViewModal" wire:model.live="showViewModal" focusable maxWidth="lg">
+                    <div class="p-6 bg-white dark:bg-slate-800">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-lg font-medium text-slate-900 dark:text-white">Detail Pengaduan</h2>
+                            <button wire:click="closeViewModal" class="text-slate-400 hover:text-slate-500">
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        @if($viewComplaint)
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-500 uppercase">Subjek</label>
+                                    <p class="mt-1 text-slate-900 dark:text-slate-100 font-semibold">{{ $viewComplaint->subject }}</p>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-500 uppercase">Nasabah</label>
+                                        <p class="mt-1 text-slate-900 dark:text-slate-100">{{ $viewComplaint->customer?->full_name ?? '-' }}</p>
+                                        <p class="text-xs text-slate-500">{{ $viewComplaint->customer?->phone_number }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-500 uppercase">Status</label>
+                                        <div class="mt-1">
+                                            @switch($viewComplaint->status)
+                                                @case('pending')
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300">Pending</span>
+                                                    @break
+                                                @case('processing')
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Proses</span>
+                                                    @break
+                                                @case('resolved')
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">Selesai</span>
+                                                    @break
+                                            @endswitch
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-500 uppercase">Rekening</label>
+                                    <p class="mt-1 text-slate-900 dark:text-slate-100">{{ $viewComplaint->account?->bank_name ?? '-' }} - {{ $viewComplaint->account?->account_number ?? '-' }}</p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-500 uppercase">Deskripsi</label>
+                                    <div class="mt-1 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg text-slate-700 dark:text-slate-300 text-sm whitespace-pre-wrap">{{ $viewComplaint->description ?: 'Tidak ada deskripsi' }}</div>
+                                </div>
+                                
+                                <div class="pt-2 border-t border-slate-100 dark:border-slate-700 text-xs text-slate-400 flex justify-between">
+                                    <span>Dibuat: {{ $viewComplaint->created_at->format('d M Y H:i') }}</span>
+                                    <span>Terakhir update: {{ $viewComplaint->updated_at->format('d M Y H:i') }}</span>
+                                </div>
+                            </div>
+                        @endif
+                        
+                        <div class="mt-6 flex justify-end">
+                            <x-secondary-button wire:click="closeViewModal">Tutup</x-secondary-button>
                         </div>
                     </div>
                 </x-modal>
