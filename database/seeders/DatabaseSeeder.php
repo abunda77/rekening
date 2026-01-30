@@ -12,8 +12,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Call RolePermissionSeeder first (required before user creation)
+        $this->call([
+            RolePermissionSeeder::class,
+        ]);
+
         // Create default admin user (or update if exists)
-        User::updateOrCreate(
+        $adminUser = User::updateOrCreate(
             ['email' => 'admin@example.com'],
             [
                 'name' => 'Administrator',
@@ -21,6 +26,12 @@ class DatabaseSeeder extends Seeder
                 'password' => bcrypt('password'),
             ]
         );
+
+        // Assign Super Admin role to admin user (sync to ensure it's assigned)
+        $superAdminRole = \Spatie\Permission\Models\Role::where('name', 'Super Admin')->first();
+        if ($superAdminRole && ! $adminUser->hasRole('Super Admin')) {
+            $adminUser->assignRole($superAdminRole);
+        }
 
         // Call all seeders in order (respecting foreign keys)
         $this->call([

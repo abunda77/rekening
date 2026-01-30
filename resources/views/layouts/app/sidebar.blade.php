@@ -172,6 +172,35 @@
                         <span class="nav-item-text">{{ __('Shipment') }}</span>
                     </flux:sidebar.item>
                 </flux:sidebar.group>
+
+                @if(auth()->check() && auth()->user()->hasRole('Super Admin'))
+                <flux:sidebar.group :heading="__('Administration')" class="grid">
+                    <flux:sidebar.item :href="route('rekening.users')" :current="request()->routeIs('rekening.users')" wire:navigate>
+                        <x-slot:icon>
+                            <div class="sidebar-icon-wrapper {{ request()->routeIs('rekening.users') ? 'active' : '' }}">
+                                @include('flux::icon.users')
+                            </div>
+                        </x-slot:icon>
+                        <span class="nav-item-text">{{ __('Users') }}</span>
+                    </flux:sidebar.item>
+                    <flux:sidebar.item :href="route('rekening.roles')" :current="request()->routeIs('rekening.roles')" wire:navigate>
+                        <x-slot:icon>
+                            <div class="sidebar-icon-wrapper {{ request()->routeIs('rekening.roles') ? 'active' : '' }}">
+                                @include('flux::icon.shield')
+                            </div>
+                        </x-slot:icon>
+                        <span class="nav-item-text">{{ __('Roles') }}</span>
+                    </flux:sidebar.item>
+                    <flux:sidebar.item :href="route('rekening.permissions')" :current="request()->routeIs('rekening.permissions')" wire:navigate>
+                        <x-slot:icon>
+                            <div class="sidebar-icon-wrapper {{ request()->routeIs('rekening.permissions') ? 'active' : '' }}">
+                                @include('flux::icon.key')
+                            </div>
+                        </x-slot:icon>
+                        <span class="nav-item-text">{{ __('Permissions') }}</span>
+                    </flux:sidebar.item>
+                </flux:sidebar.group>
+                @endif
             </flux:sidebar.nav>
 
             <flux:spacer />

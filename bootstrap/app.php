@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->is('agent*')) {
                 return route('agent.login');
             }
+
             return route('login');
         });
 
@@ -26,8 +27,16 @@ return Application::configure(basePath: dirname(__DIR__))
             if (request()->is('agent*') || Auth::guard('agent')->check()) {
                 return route('agent.dashboard');
             }
+
             return route('dashboard');
         });
+
+        // Spatie Laravel Permission middleware
+        $middleware->alias([
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
