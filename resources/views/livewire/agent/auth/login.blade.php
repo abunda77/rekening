@@ -79,7 +79,7 @@
                             <!-- Focus Glow -->
                             <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/0 via-blue-500/10 to-cyan-500/0 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                         </div>
-                        <p class="mt-2 text-xs text-slate-500 italic flex items-center gap-1">
+                        <p class="mt-2 text-xs text-slate-400 italic flex items-center gap-1">
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
@@ -95,10 +95,10 @@
                         @enderror
                     </div>
 
-                    <!-- Password Input -->
+                    <!-- PIN Input -->
                     <div class="group">
                         <label for="password" class="block text-sm font-medium text-slate-300 mb-2 transition-colors group-focus-within:text-blue-400">
-                            Kata Sandi
+                            PIN
                         </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
