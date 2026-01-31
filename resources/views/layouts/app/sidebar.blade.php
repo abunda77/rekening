@@ -162,6 +162,12 @@
                             </div>
                         </x-slot:icon>
                         <span class="nav-item-text">{{ __('Help Desk') }}</span>
+                        @php
+                            $pendingCount = \App\Models\Complaint::pending()->count();
+                        @endphp
+                        @if($pendingCount > 0)
+                            <flux:badge color="red" size="sm" class="ml-auto">{{ $pendingCount }}</flux:badge>
+                        @endif
                     </flux:sidebar.item>
                     <flux:sidebar.item :href="route('rekening.shipments')" :current="request()->routeIs('rekening.shipments')" wire:navigate>
                         <x-slot:icon>

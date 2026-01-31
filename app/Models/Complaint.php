@@ -55,4 +55,15 @@ class Complaint extends Model
     {
         return $this->belongsTo(Account::class);
     }
+
+    /**
+     * Scope a query to only include pending complaints.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
 }

@@ -80,5 +80,57 @@
                 </div>
             @endif
         </div>
+
+        {{-- Pending Complaints Table --}}
+        <div class="relative flex h-full flex-col overflow-hidden rounded-xl border border-amber-200 bg-white dark:border-amber-800 dark:bg-neutral-800">
+            <div class="border-b border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 px-6 py-4 dark:border-amber-800 dark:from-amber-950/30 dark:to-orange-950/30">
+                <h3 class="text-lg font-medium text-amber-900 dark:text-amber-100">Pending Complaints</h3>
+            </div>
+            
+            <div class="flex-1 overflow-auto">
+                <table class="w-full text-left text-sm text-neutral-600 dark:text-neutral-400">
+                    <thead class="bg-neutral-50 border-b border-neutral-200 text-xs uppercase text-neutral-500 dark:bg-neutral-700/50 dark:border-neutral-700 dark:text-neutral-300">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Customer</th>
+                            <th scope="col" class="px-6 py-3">Agent</th>
+                            <th scope="col" class="px-6 py-3">Account Number</th>
+                            <th scope="col" class="px-6 py-3">Subject</th>
+                            <th scope="col" class="px-6 py-3">Created At</th>
+                            <th scope="col" class="px-6 py-3">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">
+                        @forelse ($pendingComplaints as $complaint)
+                            <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-700/25">
+                                <td class="px-6 py-4 font-medium text-neutral-900 dark:text-white">{{ $complaint->customer->full_name ?? '-' }}</td>
+                                <td class="px-6 py-4">{{ $complaint->agent->agent_name ?? 'Unassigned' }}</td>
+                                <td class="px-6 py-4">{{ $complaint->account->account_number ?? '-' }}</td>
+                                <td class="px-6 py-4">
+                                    <div class="max-w-xs truncate" title="{{ $complaint->subject }}">{{ $complaint->subject }}</div>
+                                </td>
+                                <td class="px-6 py-4">{{ $complaint->created_at->format('d M Y H:i') }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20 dark:bg-amber-400/10 dark:text-amber-400 dark:ring-amber-400/20">
+                                        {{ ucfirst($complaint->status) }}
+                                    </span>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center text-neutral-500 dark:text-neutral-400">
+                                    No pending complaints found.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            
+            @if($pendingComplaints->hasPages())
+                <div class="border-t border-neutral-200 px-6 py-4 dark:border-neutral-700">
+                    {{ $pendingComplaints->links() }}
+                </div>
+            @endif
+        </div>
     </div>
 </x-layouts::app>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\Agent;
 use App\Models\Card;
+use App\Models\Complaint;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -27,12 +28,18 @@ class DashboardController extends Controller
             ->latest('expired_on')
             ->paginate(10);
 
+        $pendingComplaints = Complaint::with(['customer', 'agent', 'account'])
+            ->pending()
+            ->latest()
+            ->paginate(10, ['*'], 'complaints');
+
         return view('dashboard', compact(
             'totalAgents',
             'totalCustomers',
             'totalAccounts',
             'totalAtms',
-            'expiringAccounts'
+            'expiringAccounts',
+            'pendingComplaints'
         ));
     }
 }
