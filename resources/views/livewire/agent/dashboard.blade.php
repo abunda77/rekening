@@ -14,7 +14,10 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <!-- Dark Mode Toggle -->
+                    {{-- Notification Bell --}}
+                    <livewire:agent.notification-bell />
+                    
+                    {{-- Dark Mode Toggle --}}
                     <button type="button" @click="darkMode = !darkMode" class="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <svg x-show="!darkMode" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />

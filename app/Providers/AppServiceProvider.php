@@ -2,6 +2,14 @@
 
 namespace App\Providers;
 
+use App\Models\Account;
+use App\Models\Card;
+use App\Models\Complaint;
+use App\Models\Shipment;
+use App\Observers\AccountObserver;
+use App\Observers\CardObserver;
+use App\Observers\ComplaintObserver;
+use App\Observers\ShipmentObserver;
 use Carbon\CarbonImmutable;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
@@ -28,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->registerObservers();
 
         if (config('app.force_https')) {
             URL::forceScheme('https');
@@ -57,5 +66,16 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null
         );
+    }
+
+    /**
+     * Register model observers.
+     */
+    protected function registerObservers(): void
+    {
+        Account::observe(AccountObserver::class);
+        Card::observe(CardObserver::class);
+        Complaint::observe(ComplaintObserver::class);
+        Shipment::observe(ShipmentObserver::class);
     }
 }
