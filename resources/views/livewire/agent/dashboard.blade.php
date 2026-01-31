@@ -109,6 +109,14 @@
                                                         <div class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ $account->bank_name }}</div>
                                                         <div class="text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">{{ $account->branch }}</div>
                                                         <div class="text-sm font-mono text-slate-500 dark:text-sky-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded inline-block mb-3 border border-transparent dark:border-slate-700">{{ $account->account_number }}</div>
+                                                        @if($account->expired_on)
+                                                            <div class="text-xs text-slate-500 dark:text-slate-400 mb-3 flex items-center">
+                                                                <svg class="w-3 h-3 mr-1 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                                </svg>
+                                                                Exp: {{ $account->expired_on->format('d M Y') }}
+                                                            </div>
+                                                        @endif
                                                         
                                                         <div class="flex items-center space-x-2">
                                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold capitalize {{ $account->status === 'active' ? 'bg-green-100 text-green-700 ring-1 ring-green-600/20 dark:bg-green-900/40 dark:text-green-300 dark:ring-green-500/30' : 'bg-red-100 text-red-700 ring-1 ring-red-600/20 dark:bg-red-900/40 dark:text-red-300 dark:ring-red-500/30' }}">
@@ -443,6 +451,13 @@
                     <div class="space-y-1">
                         <span class="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-widest">Tanggal Pembukaan</span>
                         <p class="text-base font-bold text-slate-900 dark:text-white">{{ $selectedAccount->opening_date ? $selectedAccount->opening_date->format('d M Y') : '-' }}</p>
+                    </div>
+
+                    <div class="space-y-1">
+                        <span class="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-widest">Akhir kontrak</span>
+                        <p class="text-base font-bold text-slate-900 dark:text-white {{ $selectedAccount->expired_on && $selectedAccount->expired_on->isPast() ? 'text-red-600 dark:text-red-400' : '' }}">
+                            {{ $selectedAccount->expired_on ? $selectedAccount->expired_on->format('d M Y') : '-' }}
+                        </p>
                     </div>
 
                     <div class="md:col-span-2 space-y-1">
