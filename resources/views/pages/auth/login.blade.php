@@ -43,7 +43,7 @@
                 <div class="absolute bottom-0 left-0 w-4 h-4 border-l-2 border-b-2 border-red-600"></div>
                 <div class="absolute bottom-0 right-0 w-4 h-4 border-r-2 border-b-2 border-red-600"></div>
 
-                <div class="p-8 md:p-12 relative">
+                <div class="p-4 md:p-4 relative">
                     
                     <!-- Logo Section -->
                     <div class="flex flex-col items-center mb-10">
@@ -143,7 +143,7 @@
                         </button>
                     </form>
 
-                    <div class="mt-8 text-center space-y-2">
+                    <div class="mt-4 text-center space-y-2">
                          @if (Route::has('register'))
                             <div class="text-[10px] uppercase text-red-500/50 tracking-widest">
                                 New Personnel? <a href="{{ route('register') }}" class="text-red-400 hover:text-red-300 underline underline-offset-4 decoration-1 decoration-red-800">[ Initialize Profile ]</a>

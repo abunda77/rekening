@@ -30,7 +30,7 @@
             <div class="absolute bottom-0 left-0 w-4 h-4 border-l-2 border-b-2 border-blue-500"></div>
             <div class="absolute bottom-0 right-0 w-4 h-4 border-r-2 border-b-2 border-blue-500"></div>
 
-            <div class="p-8 md:p-12 relative">
+            <div class="p-4 md:p-4 relative">
                 
                 <!-- Logo Section -->
                 <div class="flex flex-col items-center mb-10">
