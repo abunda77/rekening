@@ -7,10 +7,12 @@ use App\Livewire\Rekening\AgentCrud;
 use App\Livewire\Rekening\CardCrud;
 use App\Livewire\Rekening\ComplaintCrud;
 use App\Livewire\Rekening\CustomerCrud;
+use App\Livewire\Rekening\DatabaseBackupCrud;
 use App\Livewire\Rekening\PermissionCrud;
 use App\Livewire\Rekening\RoleCrud;
 use App\Livewire\Rekening\ShipmentCrud;
 use App\Livewire\Rekening\UserCrud;
+use App\Models\DatabaseBackup;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -32,6 +34,16 @@ Route::middleware(['auth', 'verified'])->prefix('rekening')->group(function () {
     Route::get('/roles', RoleCrud::class)->name('rekening.roles')->middleware(['role:Super Admin']);
     Route::get('/permissions', PermissionCrud::class)->name('rekening.permissions')->middleware(['role:Super Admin']);
     Route::get('/users', UserCrud::class)->name('rekening.users')->middleware(['role:Super Admin']);
+    Route::get('/backups', DatabaseBackupCrud::class)->name('rekening.backups')->middleware(['role:Super Admin']);
+
+    // Backup download route
+    Route::get('/backups/{backup}/download', function (DatabaseBackup $backup) {
+        if (! $backup->file_exists) {
+            abort(404, 'File backup tidak ditemukan.');
+        }
+
+        return response()->download($backup->file_path, $backup->filename);
+    })->name('rekening.backups.download')->middleware(['role:Super Admin']);
 });
 
 // Agent Portal Routes

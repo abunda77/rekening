@@ -205,6 +205,14 @@
                         </x-slot:icon>
                         <span class="nav-item-text">{{ __('Permissions') }}</span>
                     </flux:sidebar.item>
+                    <flux:sidebar.item :href="route('rekening.backups')" :current="request()->routeIs('rekening.backups')" wire:navigate>
+                        <x-slot:icon>
+                            <div class="sidebar-icon-wrapper {{ request()->routeIs('rekening.backups') ? 'active' : '' }}">
+                                @include('flux::icon.database')
+                            </div>
+                        </x-slot:icon>
+                        <span class="nav-item-text">{{ __('Backup Database') }}</span>
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
                 @endif
             </flux:sidebar.nav>
