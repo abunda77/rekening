@@ -151,25 +151,6 @@ class DatabaseBackupCrud extends Component
         $this->isCreatingBackup = false;
     }
 
-    public function download(int $id): void
-    {
-        $backup = DatabaseBackup::findOrFail($id);
-
-        if (! $backup->file_exists) {
-            session()->flash('error', 'File backup tidak ditemukan.');
-
-            return;
-        }
-
-        $filePath = $backup->file_path;
-        $filename = $backup->filename;
-
-        // Use response()->download() through a redirect
-        $this->dispatch('downloadBackup', [
-            'url' => route('rekening.backups.download', $id),
-        ]);
-    }
-
     public function confirmDelete(int $id): void
     {
         $this->deleteId = $id;

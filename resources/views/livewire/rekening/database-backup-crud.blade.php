@@ -126,27 +126,28 @@
                                 <td class="px-4 py-3 text-center">
                                     <div class="flex items-center justify-center gap-2">
                                         @if($backup->status === 'success' && $backup->file_exists)
-                                            <flux:button 
-                                                wire:click="download({{ $backup->id }})" 
-                                                size="sm" 
-                                                variant="ghost" 
-                                                icon="arrow-down-tray"
-                                                class="text-blue-500 hover:text-blue-700"
-                                            />
+                                            <a
+                                                href="{{ route('rekening.backups.download', $backup->id) }}"
+                                                class="inline-flex items-center justify-center p-2 text-blue-500 hover:text-blue-700 transition-colors"
+                                                title="Download"
+                                            >
+                                                <flux:icon name="arrow-down-tray" class="w-4 h-4" />
+                                            </a>
                                         @else
-                                            <flux:button 
-                                                size="sm" 
-                                                variant="ghost" 
-                                                icon="arrow-down-tray"
-                                                class="text-zinc-300 cursor-not-allowed"
+                                            <button
+                                                type="button"
+                                                class="inline-flex items-center justify-center p-2 text-zinc-300 cursor-not-allowed"
                                                 disabled
-                                            />
+                                                title="File tidak tersedia"
+                                            >
+                                                <flux:icon name="arrow-down-tray" class="w-4 h-4" />
+                                            </button>
                                         @endif
-                                        <flux:button 
-                                            wire:click="confirmDelete({{ $backup->id }})" 
-                                            size="sm" 
-                                            variant="ghost" 
-                                            icon="trash" 
+                                        <flux:button
+                                            wire:click="confirmDelete({{ $backup->id }})"
+                                            size="sm"
+                                            variant="ghost"
+                                            icon="trash"
                                             class="text-red-500 hover:text-red-700"
                                         />
                                     </div>
