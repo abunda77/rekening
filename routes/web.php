@@ -8,6 +8,7 @@ use App\Livewire\Rekening\CardCrud;
 use App\Livewire\Rekening\ComplaintCrud;
 use App\Livewire\Rekening\CustomerCrud;
 use App\Livewire\Rekening\DatabaseBackupCrud;
+use App\Livewire\Rekening\NoteCrud;
 use App\Livewire\Rekening\PermissionCrud;
 use App\Livewire\Rekening\RoleCrud;
 use App\Livewire\Rekening\ShipmentCrud;
@@ -31,6 +32,8 @@ Route::middleware(['auth', 'verified'])->prefix('rekening')->group(function () {
     Route::get('/cards', CardCrud::class)->name('rekening.cards');
     Route::get('/complaints', ComplaintCrud::class)->name('rekening.complaints');
     Route::get('/shipments', ShipmentCrud::class)->name('rekening.shipments');
+    Route::get('/notes', NoteCrud::class)->name('rekening.notes');
+
     Route::get('/roles', RoleCrud::class)->name('rekening.roles')->middleware(['role:Super Admin']);
     Route::get('/permissions', PermissionCrud::class)->name('rekening.permissions')->middleware(['role:Super Admin']);
     Route::get('/users', UserCrud::class)->name('rekening.users')->middleware(['role:Super Admin']);

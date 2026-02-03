@@ -177,6 +177,14 @@
                         </x-slot:icon>
                         <span class="nav-item-text">{{ __('Shipment') }}</span>
                     </flux:sidebar.item>
+                    <flux:sidebar.item :href="route('rekening.notes')" :current="request()->routeIs('rekening.notes')" wire:navigate>
+                        <x-slot:icon>
+                            <div class="sidebar-icon-wrapper {{ request()->routeIs('rekening.notes') ? 'active' : '' }}">
+                                @include('flux::icon.book-open-text')
+                            </div>
+                        </x-slot:icon>
+                        <span class="nav-item-text">{{ __('Notes') }}</span>
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
 
                 @if(auth()->check() && auth()->user()->hasRole('Super Admin'))
