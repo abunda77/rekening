@@ -2,7 +2,7 @@
     <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl">
     {{-- Header Section --}}
     <div class="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-700 dark:bg-neutral-800">
-        <flux:heading size="xl">Manajemen Customer</flux:heading>
+        <flux:heading size="xl">Manajemen Nasabah</flux:heading>
         <flux:text class="text-zinc-500 dark:text-zinc-400">Kelola data nasabah/pelanggan</flux:text>
     </div>
 
@@ -37,7 +37,7 @@
                     PDF
                 </flux:button>
                 <flux:button wire:click="openModal" variant="primary" icon="plus">
-                    Tambah Customer
+                    Tambah Nasabah
                 </flux:button>
             </div>
         </div>
@@ -97,7 +97,7 @@
                     @empty
                         <tr>
                             <td colspan="7" class="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">
-                                Tidak ada data customer
+                                Tidak ada data nasabah
                             </td>
                         </tr>
                     @endforelse
@@ -115,7 +115,7 @@
     {{-- Create/Edit Modal --}}
     <flux:modal wire:model="showModal" name="customer-modal" class="max-w-2xl">
         <div class="space-y-6">
-            <flux:heading size="lg">{{ $editId ? 'Edit Customer' : 'Tambah Customer Baru' }}</flux:heading>
+            <flux:heading size="lg">{{ $editId ? 'Edit Nasabah' : 'Tambah Nasabah Baru' }}</flux:heading>
 
             <form wire:submit="save" class="space-y-4">
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -257,7 +257,7 @@
                 <div class="flex justify-end gap-3 pt-4">
                     <flux:button wire:click="closeModal" variant="ghost">Batal</flux:button>
                     <flux:button type="submit" variant="primary">
-                        {{ $editId ? 'Simpan Perubahan' : 'Tambah Customer' }}
+                        {{ $editId ? 'Simpan Perubahan' : 'Tambah Nasabah' }}
                     </flux:button>
                 </div>
             </form>
@@ -268,7 +268,7 @@
     <flux:modal wire:model="showDeleteModal" name="delete-modal" class="max-w-md">
         <div class="space-y-6">
             <flux:heading size="lg">Konfirmasi Hapus</flux:heading>
-            <flux:text>Apakah Anda yakin ingin menghapus customer ini? Semua rekening dan kartu terkait juga akan dihapus.</flux:text>
+            <flux:text>Apakah Anda yakin ingin menghapus nasabah ini? Semua rekening dan kartu terkait juga akan dihapus.</flux:text>
             <div class="flex justify-end gap-3">
                 <flux:button wire:click="cancelDelete" variant="ghost">Batal</flux:button>
                 <flux:button wire:click="delete" variant="danger">Hapus</flux:button>
@@ -280,7 +280,7 @@
     <flux:modal wire:model="showBulkDeleteModal" name="bulk-delete-modal" class="max-w-md">
         <div class="space-y-6">
             <flux:heading size="lg">Konfirmasi Hapus Massal</flux:heading>
-            <flux:text>Apakah Anda yakin ingin menghapus {{ count($selected) }} customer yang dipilih? Semua data terkait (rekening, kartu) juga akan dihapus.</flux:text>
+            <flux:text>Apakah Anda yakin ingin menghapus {{ count($selected) }} nasabah yang dipilih? Semua data terkait (rekening, kartu) juga akan dihapus.</flux:text>
             <div class="flex justify-end gap-3">
                 <flux:button wire:click="cancelBulkDelete" variant="ghost">Batal</flux:button>
                 <flux:button wire:click="bulkDelete" variant="danger">Hapus</flux:button>
@@ -292,8 +292,8 @@
     <flux:modal wire:model="showViewModal" name="view-modal" class="md:w-full max-w-4xl">
         <div class="space-y-6">
             <div>
-                <flux:heading size="lg">Detail Customer</flux:heading>
-                <flux:description>Informasi lengkap data customer</flux:description>
+                <flux:heading size="lg">Detail Nasabah</flux:heading>
+                <flux:description>Informasi lengkap data nasabah</flux:description>
             </div>
 
             @if($viewingCustomer)
