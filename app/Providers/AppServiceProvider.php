@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Livewire\Blaze\Blaze;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -37,6 +38,9 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->registerObservers();
+
+        Blaze::optimize()
+            ->in(resource_path('views/components'));
 
         if (config('app.force_https')) {
             URL::forceScheme('https');
