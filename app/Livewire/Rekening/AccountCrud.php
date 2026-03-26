@@ -88,6 +88,11 @@ class AccountCrud extends Component
             'PANIN' => 'Panin Bank',
             'MAYBANK' => 'Maybank Indonesia',
             'OCBC' => 'OCBC NISP',
+            'MEGA' => 'Bank Mega',
+            'INA' => 'Bank Ina',
+            'SAMPOERNA' => 'Bank Sampoerna',
+            'NOBU' => 'Bank Nobu',
+            'UOB' => 'Bank UOB',
             'LAINNYA' => 'Lainnya',
         ];
     }
