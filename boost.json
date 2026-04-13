@@ -1,9 +1,9 @@
 {
     "agents": [
-        "opencode"
+        "codex"
     ],
     "editors": [
-        "gemini"
+        "codex"
     ],
     "guidelines": [
         "laravel/fortify"

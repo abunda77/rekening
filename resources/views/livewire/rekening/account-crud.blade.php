@@ -71,7 +71,7 @@
                                 @endif
                             </th>
                             <th class="px-4 py-3 font-semibold">Nasabah</th>
-                            <th class="px-4 py-3 font-semibold">Agent</th>
+                            <th class="px-4 py-3 font-semibold">User</th>
                             <th class="px-4 py-3 font-semibold cursor-pointer" wire:click="sortBy('status')">
                                 Status
                                 @if($sortField === 'status')
@@ -174,9 +174,9 @@
                         </flux:field>
 
                         <flux:field>
-                            <flux:label>Agent Referral</flux:label>
+                            <flux:label>User</flux:label>
                             <flux:select wire:model="agent_id">
-                                <option value="">Pilih agent (opsional)...</option>
+                                <option value="">Pilih user (opsional)...</option>
                                 @foreach($agents as $agent)
                                     <option value="{{ $agent->id }}">{{ $agent->agent_name }} ({{ $agent->agent_code }})</option>
                                 @endforeach
@@ -334,7 +334,7 @@
                         </div>
 
                         <div class="space-y-1">
-                            <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Agent Referral</span>
+                            <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">User</span>
                             <p class="text-base text-zinc-900 dark:text-zinc-100">{{ $viewingAccount->agent?->agent_name ?? '-' }}</p>
                             @if($viewingAccount->agent)
                                 <p class="text-sm text-zinc-500 dark:text-zinc-400">Kode: {{ $viewingAccount->agent->agent_code }}</p>

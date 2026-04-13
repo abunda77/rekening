@@ -93,6 +93,7 @@ class AccountCrud extends Component
             'SAMPOERNA' => 'Bank Sampoerna',
             'NOBU' => 'Bank Nobu',
             'UOB' => 'Bank UOB',
+            'SINARMAS' => 'Bank Sinarmas',
             'LAINNYA' => 'Lainnya',
         ];
     }

@@ -112,10 +112,10 @@ class AgentCrud extends Component
 
         if ($this->editId) {
             Agent::findOrFail($this->editId)->update($data);
-            session()->flash('success', 'Agent berhasil diperbarui.');
+            session()->flash('success', 'User berhasil diperbarui.');
         } else {
             Agent::create($data);
-            session()->flash('success', 'Agent berhasil ditambahkan.');
+            session()->flash('success', 'User berhasil ditambahkan.');
         }
 
         $this->closeModal();
@@ -131,7 +131,7 @@ class AgentCrud extends Component
     {
         if ($this->deleteId) {
             Agent::findOrFail($this->deleteId)->delete();
-            session()->flash('success', 'Agent berhasil dihapus.');
+            session()->flash('success', 'User berhasil dihapus.');
         }
 
         $this->showDeleteModal = false;
@@ -180,7 +180,7 @@ class AgentCrud extends Component
     {
         Agent::whereIn('id', $this->selected)->delete();
 
-        session()->flash('success', count($this->selected).' agent berhasil dihapus.');
+        session()->flash('success', count($this->selected).' User berhasil dihapus.');
 
         $this->selected = [];
         $this->selectAll = false;
