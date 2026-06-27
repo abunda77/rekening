@@ -108,14 +108,11 @@
                                 <td class="px-4 py-3 text-center">
                                     <div class="flex items-center justify-center gap-2">
                                         <flux:button wire:click="openModal('{{ $user->id }}')" size="sm" variant="ghost" icon="pencil" />
-                                        <flux:button 
-                                            wire:click="confirmDelete('{{ $user->id }}')" 
-                                            size="sm" 
-                                            variant="ghost" 
-                                            icon="trash" 
-                                            class="text-red-500 hover:text-red-700 {{ $user->id === auth()->id() ? 'opacity-50 cursor-not-allowed' : '' }}"
-                                            {{ $user->id === auth()->id() ? 'disabled' : '' }}
-                                        />
+                                        @if($user->id === auth()->id())
+                                            <flux:button size="sm" variant="ghost" icon="trash" class="text-red-500 opacity-50 cursor-not-allowed" disabled />
+                                        @else
+                                            <flux:button wire:click="confirmDelete('{{ $user->id }}')" size="sm" variant="ghost" icon="trash" class="text-red-500 hover:text-red-700" />
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

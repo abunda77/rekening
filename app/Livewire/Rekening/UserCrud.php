@@ -132,6 +132,20 @@ class UserCrud extends Component
 
     public function confirmDelete(string $id): void
     {
+        $user = User::findOrFail($id);
+
+        if ($user->id === auth()->id()) {
+            session()->flash('error', 'Anda tidak dapat menghapus akun sendiri.');
+
+            return;
+        }
+
+        if ($user->hasRole('Super Admin') && User::role('Super Admin')->count() <= 1) {
+            session()->flash('error', 'Tidak dapat menghapus user Super Admin terakhir.');
+
+            return;
+        }
+
         $this->deleteId = $id;
         $this->showDeleteModal = true;
     }
