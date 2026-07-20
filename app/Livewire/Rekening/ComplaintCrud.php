@@ -242,11 +242,8 @@ class ComplaintCrud extends Component
 
         return view('livewire.rekening.complaint-crud', [
             'complaints' => $complaints,
-            // Optimization for Account Select: Load only necessary fields + relationships
-            'accounts' => Account::with('customer')->orderBy('created_at', 'desc')->take(500)->get(),
-            // In a real app with many accounts, use search inputs for the account select.
-            // For now, limited to 500 recent or all if manageable.
-            'agents' => Agent::orderBy('agent_name')->get(),
+            'accounts' => $this->showModal ? Account::with('customer')->orderBy('created_at', 'desc')->take(500)->get() : collect(),
+            'agents' => $this->showModal ? Agent::orderBy('agent_name')->get() : collect(),
         ]);
     }
 }
