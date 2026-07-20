@@ -55,6 +55,8 @@ class AccountCrud extends Component
 
     public string $status = 'aktif';
 
+    public bool $is_vip = false;
+
     public bool $showModal = false;
 
     public bool $showDeleteModal = false;
@@ -152,9 +154,11 @@ class AccountCrud extends Component
             $this->note = $account->note ?? '';
             $this->mobile_banking = $account->mobile_banking ?? '';
             $this->status = $account->status;
+            $this->is_vip = $account->is_vip;
         } else {
             $this->reset(['customer_id', 'agent_id', 'bank_name', 'branch', 'account_number', 'opening_date', 'expired_on', 'note', 'mobile_banking', 'cover_buku']);
             $this->status = 'aktif';
+            $this->is_vip = false;
         }
 
         $this->showModal = true;
@@ -163,7 +167,7 @@ class AccountCrud extends Component
     public function closeModal(): void
     {
         $this->showModal = false;
-        $this->reset(['editId', 'customer_id', 'agent_id', 'bank_name', 'branch', 'account_number', 'opening_date', 'expired_on', 'note', 'mobile_banking', 'status', 'cover_buku']);
+        $this->reset(['editId', 'customer_id', 'agent_id', 'bank_name', 'branch', 'account_number', 'opening_date', 'expired_on', 'note', 'mobile_banking', 'status', 'is_vip', 'cover_buku']);
         $this->resetValidation();
     }
 
@@ -182,6 +186,7 @@ class AccountCrud extends Component
             'note' => $this->note ?: null,
             'mobile_banking' => $this->mobile_banking ?: null,
             'status' => $this->status,
+            'is_vip' => $this->is_vip,
         ];
 
         if ($this->cover_buku) {

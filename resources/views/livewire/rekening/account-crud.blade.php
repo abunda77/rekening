@@ -78,6 +78,12 @@
                                     <span class="ml-1">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
                                 @endif
                             </th>
+                            <th class="px-4 py-3 font-semibold cursor-pointer" wire:click="sortBy('is_vip')">
+                                VIP
+                                @if($sortField === 'is_vip')
+                                    <span class="ml-1">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                                @endif
+                            </th>
                             <th class="px-4 py-3 font-semibold cursor-pointer" wire:click="sortBy('opening_date')">
                                 Tgl Buka
                                 @if($sortField === 'opening_date')
@@ -124,6 +130,13 @@
                                             @break
                                     @endswitch
                                 </td>
+                                <td class="px-4 py-3">
+                                    @if($account->is_vip)
+                                        <flux:badge color="purple">Yes</flux:badge>
+                                    @else
+                                        <flux:badge color="zinc">No</flux:badge>
+                                    @endif
+                                </td>
                                 <td class="px-4 py-3 text-zinc-500 dark:text-zinc-400">
                                     {{ $account->opening_date?->format('d M Y') ?? '-' }}
                                 </td>
@@ -140,7 +153,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">
+                                <td colspan="10" class="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">
                                     Tidak ada data rekening
                                 </td>
                             </tr>
@@ -226,9 +239,15 @@
                                 <option value="bermasalah">Bermasalah</option>
                                 <option value="nonaktif">Non-Aktif</option>
                             </flux:select>
-                            <flux:error name="status" />
-                        </flux:field>
-                    </div>
+                                <flux:error name="status" />
+                            </flux:field>
+
+                            <flux:field>
+                                <flux:label>VIP</flux:label>
+                                <flux:switch wire:model="is_vip" label="Tandai sebagai nasabah VIP" />
+                                <flux:error name="is_vip" />
+                            </flux:field>
+                        </div>
 
                     <flux:field>
                         <flux:label>Mobile Banking</flux:label>
@@ -355,6 +374,17 @@
                                         <flux:badge color="zinc">Non-Aktif</flux:badge>
                                         @break
                                 @endswitch
+                            </div>
+                        </div>
+
+                        <div class="space-y-1">
+                            <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">VIP</span>
+                            <div class="mt-1">
+                                @if($viewingAccount->is_vip)
+                                    <flux:badge color="purple">Yes</flux:badge>
+                                @else
+                                    <flux:badge color="zinc">No</flux:badge>
+                                @endif
                             </div>
                         </div>
 

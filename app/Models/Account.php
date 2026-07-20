@@ -28,6 +28,7 @@ class Account extends Model
         'expired_on',
         'note',
         'status',
+        'is_vip',
         'mobile_banking',
         'cover_buku',
     ];
@@ -42,6 +43,7 @@ class Account extends Model
         return [
             'opening_date' => 'date',
             'expired_on' => 'date',
+            'is_vip' => 'boolean',
         ];
     }
 
