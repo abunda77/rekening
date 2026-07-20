@@ -1,11 +1,9 @@
 {
     "agents": [
-        "codex"
+        "opencode"
     ],
-    "editors": [
-        "codex"
-    ],
-    "guidelines": [
-        "laravel/fortify"
-    ]
+    "cloud": false,
+    "mcp": true,
+    "nightwatch": false,
+    "sail": false
 }

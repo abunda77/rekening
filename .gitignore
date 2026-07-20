@@ -30,3 +30,9 @@ frankenphp-worker.php
 **/.kilocode
 opencode.json
 
+.agents/skills/laravel-best-practices/
+.agents/skills/livewire-development/
+.agents/skills/pest-testing/
+.agents/skills/tailwindcss-development/
+.claude/
+
