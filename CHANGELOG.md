@@ -5,6 +5,7 @@ Semua perubahan penting pada proyek ini akan didokumentasikan di file ini.
 ## [Unreleased]
 
 ### Added
+- Kolom **VIP** (Yes/No) pada manajemen Rekening dengan badge, pengurutan, dan field `flux:switch` di formulir
 - Pilihan bank pada formulir pendaftaran Rekening/Nasabah
 - Integrasi `livewireblaze` (Livewire Blaze)
 - Fitur Catatan (Notes) untuk informasi tambahan
@@ -18,6 +19,7 @@ Semua perubahan penting pada proyek ini akan didokumentasikan di file ini.
 - Toggle mode gelap/terang (dark/light mode) di dashboard admin
 
 ### Changed
+- Penambahan kolom `is_vip` (boolean) pada tabel `accounts` melalui migrasi baru
 - Pembaruan dokumen panduan `agents.md` & `claude.md`
 - Penyempurnaan template AI Guidelines dan Skill Laravel Rekening
 - Perubahan label menu dari "Agent" menjadi "User"

@@ -5,5 +5,12 @@
     "cloud": false,
     "mcp": true,
     "nightwatch": false,
-    "sail": false
+    "sail": false,
+    "skills": [
+        "laravel-best-practices",
+        "livewire-development",
+        "pest-testing",
+        "tailwindcss-development",
+        "laravel-rekening"
+    ]
 }
