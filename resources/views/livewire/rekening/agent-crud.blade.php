@@ -2,8 +2,8 @@
     <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl">
         {{-- Header Section --}}
         <div class="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-700 dark:bg-neutral-800">
-            <flux:heading size="xl">Manajemen Agent</flux:heading>
-            <flux:text class="text-zinc-500 dark:text-zinc-400">Kelola Data Agent</flux:text>
+            <flux:heading size="xl">Manajemen User</flux:heading>
+            <flux:text class="text-zinc-500 dark:text-zinc-400">Kelola data User</flux:text>
         </div>
 
         {{-- Flash Message --}}
@@ -17,8 +17,8 @@
         <div class="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-2">
-                    <flux:input wire:model.live.debounce.300ms="search" placeholder="Cari Agent..." icon="magnifying-glass" class="w-64" />
-                        
+                    <flux:input wire:model.live.debounce.300ms="search" placeholder="Cari user..."
+                        icon="magnifying-glass" class="w-64" />
                 </div>
                 <div class="flex items-center gap-2">
                     @if(!empty($selected))
@@ -44,13 +44,13 @@
                                 <flux:checkbox wire:model.live="selectAll" />
                             </th>
                             <th class="px-4 py-3 font-semibold cursor-pointer" wire:click="sortBy('agent_code')">
-                                Kode Agent
+                                Kode User
                                 @if($sortField === 'agent_code')
                                     <span class="ml-1">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
                                 @endif
                             </th>
                             <th class="px-4 py-3 font-semibold cursor-pointer" wire:click="sortBy('agent_name')">
-                                Nama Agent
+                                Nama User
                                 @if($sortField === 'agent_name')
                                     <span class="ml-1">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
                                 @endif
@@ -92,7 +92,7 @@
                         @empty
                             <tr>
                                 <td colspan="6" class="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">
-                                    Tidak ada data Agent
+                                    Tidak ada data User
                                 </td>
                             </tr>
                         @endforelse
@@ -110,17 +110,17 @@
         {{-- Create/Edit Modal --}}
         <flux:modal wire:model="showModal" name="agent-modal" class="max-w-lg">
             <div class="space-y-6">
-                <flux:heading size="lg">{{ $editId ? 'Edit Agent' : 'Tambah Agent Baru' }}</flux:heading>
+                <flux:heading size="lg">{{ $editId ? 'Edit User' : 'Tambah User Baru' }}</flux:heading>
 
                 <form wire:submit="save" class="space-y-4">
                     <flux:field>
-                        <flux:label>Kode Agent</flux:label>
+                        <flux:label>Kode User</flux:label>
                         <flux:input wire:model="agent_code" placeholder="AG-001" />
                         <flux:error name="agent_code" />
                     </flux:field>
 
                     <flux:field>
-                        <flux:label>Nama Agent</flux:label>
+                        <flux:label>Nama User</flux:label>
                         <flux:input wire:model="agent_name" placeholder="Nama lengkap User" />
                         <flux:error name="agent_name" />
                     </flux:field>
@@ -140,7 +140,7 @@
                     <div class="flex justify-end gap-3 pt-4">
                         <flux:button wire:click="closeModal" variant="ghost">Batal</flux:button>
                         <flux:button type="submit" variant="primary">
-                            {{ $editId ? 'Simpan Perubahan' : 'Tambah Agent' }}
+                            {{ $editId ? 'Simpan Perubahan' : 'Tambah User' }}
                         </flux:button>
                     </div>
                 </form>
@@ -151,7 +151,7 @@
         <flux:modal wire:model="showDeleteModal" name="delete-modal" class="max-w-md">
             <div class="space-y-6">
                 <flux:heading size="lg">Konfirmasi Hapus</flux:heading>
-                <flux:text>Apakah Anda yakin ingin menghapus Agent ini? Tindakan ini tidak dapat dibatalkan.</flux:text>
+                <flux:text>Apakah Anda yakin ingin menghapus User ini? Tindakan ini tidak dapat dibatalkan.</flux:text>
                 <div class="flex justify-end gap-3">
                     <flux:button wire:click="cancelDelete" variant="ghost">Batal</flux:button>
                     <flux:button wire:click="delete" variant="danger">Hapus</flux:button>
@@ -163,7 +163,7 @@
         <flux:modal wire:model="showBulkDeleteModal" name="bulk-delete-modal" class="max-w-md">
             <div class="space-y-6">
                 <flux:heading size="lg">Konfirmasi Hapus Massal</flux:heading>
-                <flux:text>Apakah Anda yakin ingin menghapus {{ count($selected) }} agent Agent yang dipilih? Tindakan
+                <flux:text>Apakah Anda yakin ingin menghapus {{ count($selected) }} agent User yang dipilih? Tindakan
                     ini tidak dapat dibatalkan.</flux:text>
                 <div class="flex justify-end gap-3">
                     <flux:button wire:click="cancelBulkDelete" variant="ghost">Batal</flux:button>
