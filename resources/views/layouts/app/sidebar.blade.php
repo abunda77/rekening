@@ -130,7 +130,7 @@
                             @include('flux::icon.users')
                         </div>
                     </x-slot:icon>
-                    <span class="nav-item-text">{{ __('User') }}</span>
+                    <span class="nav-item-text">{{ __('Agent') }}</span>
                 </flux:sidebar.item>
                 <flux:sidebar.item :href="route('rekening.customers')"
                     :current="request()->routeIs('rekening.customers')" wire:navigate>
