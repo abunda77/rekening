@@ -18,7 +18,7 @@
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-2">
                     <flux:input wire:model.live.debounce.300ms="search" placeholder="Cari Agent..." icon="magnifying-glass" class="w-64" />
-                        icon="magnifying-glass" class="w-64" />
+                        
                 </div>
                 <div class="flex items-center gap-2">
                     @if(!empty($selected))
