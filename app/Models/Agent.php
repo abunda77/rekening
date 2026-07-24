@@ -81,6 +81,16 @@ class Agent extends Authenticatable
     }
 
     /**
+     * Get company accounts associated with this agent.
+     *
+     * @return HasMany<CompanyAccount, $this>
+     */
+    public function companyAccounts(): HasMany
+    {
+        return $this->hasMany(CompanyAccount::class);
+    }
+
+    /**
      * Get complaints handled by this agent.
      *
      * @return HasMany<Complaint, $this>

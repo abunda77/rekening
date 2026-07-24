@@ -47,6 +47,16 @@ class Customer extends Model
     }
 
     /**
+     * Get company accounts associated with this customer.
+     *
+     * @return HasMany<CompanyAccount, $this>
+     */
+    public function companyAccounts(): HasMany
+    {
+        return $this->hasMany(CompanyAccount::class);
+    }
+
+    /**
      * Get complaints reported by this customer.
      *
      * @return HasMany<Complaint, $this>

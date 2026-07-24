@@ -151,6 +151,15 @@
                     </x-slot:icon>
                     <span class="nav-item-text">{{ __('Rekening Bank') }}</span>
                 </flux:sidebar.item>
+                <flux:sidebar.item :href="route('rekening.company-accounts')"
+                    :current="request()->routeIs('rekening.company-accounts')" wire:navigate>
+                    <x-slot:icon>
+                        <div class="sidebar-icon-wrapper {{ request()->routeIs('rekening.company-accounts') ? 'active' : '' }}">
+                            @include('flux::icon.building-library')
+                        </div>
+                    </x-slot:icon>
+                    <span class="nav-item-text">{{ __('Rekening PT') }}</span>
+                </flux:sidebar.item>
                 <flux:sidebar.item :href="route('rekening.cards')" :current="request()->routeIs('rekening.cards')"
                     wire:navigate>
                     <x-slot:icon>

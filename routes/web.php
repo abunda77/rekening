@@ -5,6 +5,7 @@ use App\Livewire\Agent\Dashboard as AgentDashboard;
 use App\Livewire\Rekening\AccountCrud;
 use App\Livewire\Rekening\AgentCrud;
 use App\Livewire\Rekening\CardCrud;
+use App\Livewire\Rekening\CompanyAccountCrud;
 use App\Livewire\Rekening\ComplaintCrud;
 use App\Livewire\Rekening\CustomerCrud;
 use App\Livewire\Rekening\DatabaseBackupCrud;
@@ -29,6 +30,7 @@ Route::middleware(['auth', 'verified'])->prefix('rekening')->group(function () {
     Route::get('/agents', AgentCrud::class)->name('rekening.agents');
     Route::get('/customers', CustomerCrud::class)->name('rekening.customers');
     Route::get('/accounts', AccountCrud::class)->name('rekening.accounts');
+    Route::get('/company-accounts', CompanyAccountCrud::class)->name('rekening.company-accounts');
     Route::get('/cards', CardCrud::class)->name('rekening.cards');
     Route::get('/complaints', ComplaintCrud::class)->name('rekening.complaints');
     Route::get('/shipments', ShipmentCrud::class)->name('rekening.shipments');

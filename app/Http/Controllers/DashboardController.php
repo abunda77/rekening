@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\Agent;
 use App\Models\Card;
+use App\Models\CompanyAccount;
 use App\Models\Complaint;
 use App\Models\Customer;
 use Illuminate\Http\Request;
@@ -20,6 +21,10 @@ class DashboardController extends Controller
         $totalAgents = Agent::count();
         $totalCustomers = Customer::count();
         $totalAccounts = Account::count();
+        $totalCompanyAccounts = CompanyAccount::count();
+        $companyAccountsExpiringThisMonth = CompanyAccount::query()
+            ->whereBetween('expired_on', [now()->startOfMonth(), now()->endOfMonth()])
+            ->count();
         $totalAtms = Card::count();
 
         $expiringAccounts = Account::with(['customer', 'agent'])
@@ -27,6 +32,11 @@ class DashboardController extends Controller
             ->whereYear('expired_on', now()->year)
             ->latest('expired_on')
             ->paginate(10);
+
+        $expiringCompanyAccounts = CompanyAccount::with(['customer', 'agent'])
+            ->whereBetween('expired_on', [now()->startOfMonth(), now()->endOfMonth()])
+            ->latest('expired_on')
+            ->paginate(10, ['*'], 'company-accounts');
 
         $pendingComplaints = Complaint::with(['customer', 'agent', 'account'])
             ->pending()
@@ -37,8 +47,11 @@ class DashboardController extends Controller
             'totalAgents',
             'totalCustomers',
             'totalAccounts',
+            'totalCompanyAccounts',
+            'companyAccountsExpiringThisMonth',
             'totalAtms',
             'expiringAccounts',
+            'expiringCompanyAccounts',
             'pendingComplaints'
         ));
     }

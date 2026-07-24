@@ -5,6 +5,10 @@ Semua perubahan penting pada proyek ini akan didokumentasikan di file ini.
 ## [Unreleased]
 
 ### Added
+- Modul **Rekening PT** (Company Account) dengan CRUD penuh, relasi opsional (nullable) ke Nasabah dan User/Agent, serta menu baru di sidebar dashboard
+- Kolom **Tanggal Buka** dan **Tanggal Berakhir** (dengan pengurutan) pada tabel CRUD Rekening PT
+- Widget dashboard **Total Company Accounts** dan **Company Accounts Expiring This Month**
+- Widget tabel **Company Accounts Expiring This Month** pada dashboard, serupa dengan tabel Accounts Expiring This Month
 - Kolom **VIP** (Yes/No) pada manajemen Rekening dengan badge, pengurutan, dan field `flux:switch` di formulir
 - Pilihan bank pada formulir pendaftaran Rekening/Nasabah
 - Integrasi `livewireblaze` (Livewire Blaze)

@@ -1,7 +1,7 @@
 <x-layouts::app :title="__('Dashboard')">
     <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl">
         {{-- Stats Grid --}}
-        <div class="grid auto-rows-min gap-4 md:grid-cols-4">
+        <div class="grid auto-rows-min gap-4 md:grid-cols-2 xl:grid-cols-3">
             {{-- Total Agents --}}
             <div class="relative overflow-hidden rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 dark:border-blue-800 dark:from-blue-950/30 dark:to-indigo-950/30">
                 <dt class="truncate text-sm font-medium text-blue-600 dark:text-blue-400">Total Agents</dt>
@@ -28,6 +28,20 @@
                 <dt class="truncate text-sm font-medium text-orange-600 dark:text-orange-400">Total ATM Cards</dt>
                 <dd class="mt-2 text-3xl font-semibold text-orange-900 dark:text-orange-100">{{ number_format($totalAtms) }}</dd>
                 <div class="absolute -right-4 -top-4 -z-10 h-24 w-24 rounded-full bg-orange-500/10 blur-2xl dark:bg-orange-500/20"></div>
+            </div>
+
+            {{-- Total Company Accounts --}}
+            <div class="relative overflow-hidden rounded-xl border border-cyan-200 bg-gradient-to-br from-cyan-50 to-sky-50 p-6 dark:border-cyan-800 dark:from-cyan-950/30 dark:to-sky-950/30">
+                <dt class="truncate text-sm font-medium text-cyan-600 dark:text-cyan-400">Total Company Accounts</dt>
+                <dd class="mt-2 text-3xl font-semibold text-cyan-900 dark:text-cyan-100">{{ number_format($totalCompanyAccounts) }}</dd>
+                <div class="absolute -right-4 -top-4 -z-10 h-24 w-24 rounded-full bg-cyan-500/10 blur-2xl dark:bg-cyan-500/20"></div>
+            </div>
+
+            {{-- Company Accounts Expiring This Month --}}
+            <div class="relative overflow-hidden rounded-xl border border-rose-200 bg-gradient-to-br from-rose-50 to-pink-50 p-6 dark:border-rose-800 dark:from-rose-950/30 dark:to-pink-950/30">
+                <dt class="truncate text-sm font-medium text-rose-600 dark:text-rose-400">Company Accounts Expiring This Month</dt>
+                <dd class="mt-2 text-3xl font-semibold text-rose-900 dark:text-rose-100">{{ number_format($companyAccountsExpiringThisMonth) }}</dd>
+                <div class="absolute -right-4 -top-4 -z-10 h-24 w-24 rounded-full bg-rose-500/10 blur-2xl dark:bg-rose-500/20"></div>
             </div>
         </div>
 
@@ -77,6 +91,58 @@
             @if($expiringAccounts->hasPages())
                 <div class="border-t border-neutral-200 px-6 py-4 dark:border-neutral-700">
                     {{ $expiringAccounts->links() }}
+                </div>
+            @endif
+        </div>
+
+        {{-- Expiring Company Accounts Table --}}
+        <div class="relative flex h-full flex-col overflow-hidden rounded-xl border border-cyan-200 bg-white dark:border-cyan-800 dark:bg-neutral-800">
+            <div class="border-b border-cyan-200 bg-gradient-to-r from-cyan-50 to-sky-50 px-6 py-4 dark:border-cyan-800 dark:from-cyan-950/30 dark:to-sky-950/30">
+                <h3 class="text-lg font-medium text-cyan-900 dark:text-cyan-100">Company Accounts Expiring This Month</h3>
+            </div>
+
+            <div class="flex-1 overflow-auto">
+                <table class="w-full text-left text-sm text-neutral-600 dark:text-neutral-400">
+                    <thead class="border-b border-neutral-200 bg-neutral-50 text-xs uppercase text-neutral-500 dark:border-neutral-700 dark:bg-neutral-700/50 dark:text-neutral-300">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Company</th>
+                            <th scope="col" class="px-6 py-3">Account Number</th>
+                            <th scope="col" class="px-6 py-3">Customer</th>
+                            <th scope="col" class="px-6 py-3">Agent</th>
+                            <th scope="col" class="px-6 py-3">Bank</th>
+                            <th scope="col" class="px-6 py-3">Expired On</th>
+                            <th scope="col" class="px-6 py-3">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">
+                        @forelse ($expiringCompanyAccounts as $account)
+                            <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-700/25">
+                                <td class="px-6 py-4 font-medium text-neutral-900 dark:text-white">{{ $account->company_name }}</td>
+                                <td class="px-6 py-4 font-mono">{{ $account->account_number }}</td>
+                                <td class="px-6 py-4">{{ $account->customer?->full_name ?? '-' }}</td>
+                                <td class="px-6 py-4">{{ $account->agent?->agent_name ?? '-' }}</td>
+                                <td class="px-6 py-4">{{ $account->bank_name }}</td>
+                                <td class="whitespace-nowrap px-6 py-4">{{ $account->expired_on?->format('d M Y') }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium {{ $account->status === 'aktif' ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-400/10 dark:text-green-400 dark:ring-green-400/20' : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-400/10 dark:text-red-400 dark:ring-red-400/20' }}">
+                                        {{ ucfirst($account->status) }}
+                                    </span>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="px-6 py-12 text-center text-neutral-500 dark:text-neutral-400">
+                                    No company accounts found expiring this month.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            @if ($expiringCompanyAccounts->hasPages())
+                <div class="border-t border-neutral-200 px-6 py-4 dark:border-neutral-700">
+                    {{ $expiringCompanyAccounts->links() }}
                 </div>
             @endif
         </div>
