@@ -37,4 +37,10 @@ opencode.json
 .claude/
 
 .boost.json
-
+.agents/skills/fluxui-development/
+.agents/skills/fortify-development/
+.agents/skills/octane-development/
+.codegraph/
+.hallmark/
+.super/
+public/css/
