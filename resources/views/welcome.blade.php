@@ -1,88 +1,360 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>{{ config('app.name', 'Laravel') }}</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|jetbrains-mono:500|space-grotesk:500,600,700&display=swap" rel="stylesheet">
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endif
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .glass-nav {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        /* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5 */
+        /* Hallmark · genre: atmospheric · macrostructure: Map / Diagram · theme: Midnight · enrichment: none · nav: N9 · footer: Ft2 · tone: misterius · audience: admin dan agen logistik · use: masuk ke ruang kerja · contrast: pass (40–41) · slop: pass (42–45) */
+        @import url('/tokens.css');
+
+        html,
+        body {
+            overflow-x: clip;
         }
-        .text-gradient {
-            background: linear-gradient(to right, #60a5fa, #a855f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+
+        body {
+            margin: 0;
+            background:
+                radial-gradient(circle at 84% 18%, var(--color-bloom), transparent 28rem),
+                radial-gradient(circle at 18% 84%, var(--color-bloom-deep), transparent 24rem),
+                var(--color-paper);
+            color: var(--color-ink);
+            font-family: var(--font-body);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        .page {
+            min-height: 100dvh;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+        }
+
+        .nav-edge,
+        .foot-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-md);
+            padding-inline: clamp(var(--space-md), 4vw, var(--space-2xl));
+        }
+
+        .nav-edge {
+            padding-block: var(--space-lg);
+        }
+
+        .nav-edge::after {
+            width: var(--space-xs);
+            height: var(--space-xs);
+            background: var(--color-accent);
+            content: '';
+        }
+
+        .wordmark {
+            color: var(--color-ink);
+            font-family: var(--font-display);
+            font-size: var(--text-lg);
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .access-link,
+        .node__link {
+            color: var(--color-ink);
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            font-weight: 500;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .access-link {
+            border-bottom: var(--rule-thin) solid var(--color-accent);
+            padding-bottom: var(--space-2xs);
+            transition: color var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out);
+        }
+
+        .access-link:hover {
+            color: var(--color-accent);
+            transform: translateY(-1px);
+        }
+
+        .access-link:active {
+            transform: translateY(1px);
+        }
+
+        .access-link:focus-visible,
+        .node__link:focus-visible,
+        .wordmark:focus-visible {
+            outline: 3px solid var(--color-focus);
+            outline-offset: 4px;
+        }
+
+        .map-layout {
+            width: min(100% - (var(--space-md) * 2), 88rem);
+            margin-inline: auto;
+            padding-block: clamp(var(--space-xl), 8vw, var(--space-4xl));
+        }
+
+        .map-intro {
+            display: grid;
+            gap: var(--space-lg);
+            padding-bottom: clamp(var(--space-xl), 7vw, var(--space-3xl));
+        }
+
+        .map-intro__title {
+            max-width: 11ch;
+            margin: 0;
+            font-family: var(--font-display);
+            font-size: var(--text-display);
+            font-style: normal;
+            font-weight: 600;
+            letter-spacing: -0.07em;
+            line-height: 0.9;
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .map-intro__copy {
+            max-width: 56ch;
+            margin: 0;
+            color: var(--color-ink-soft);
+            font-size: var(--text-lg);
+            line-height: 1.6;
+        }
+
+        .system-map {
+            position: relative;
+            display: grid;
+            gap: var(--space-lg);
+            padding: var(--space-lg) 0 var(--space-xl);
+            border-top: var(--rule-thin) solid var(--color-rule);
+            border-bottom: var(--rule-thin) solid var(--color-rule);
+        }
+
+        .node {
+            position: relative;
+            display: grid;
+            gap: var(--space-sm);
+            min-width: 0;
+            padding: var(--space-lg);
+            border: var(--rule-thin) solid var(--color-rule);
+            background: var(--color-paper-raised);
+        }
+
+        .node::before {
+            content: '';
+            width: var(--space-xs);
+            height: var(--space-xs);
+            background: var(--color-accent);
+        }
+
+        .node__title {
+            margin: 0;
+            font-family: var(--font-display);
+            font-size: var(--text-xl);
+            font-style: normal;
+            font-weight: 600;
+            letter-spacing: -0.04em;
+        }
+
+        .node__copy {
+            margin: 0;
+            color: var(--color-ink-soft);
+            font-size: var(--text-sm);
+            line-height: 1.55;
+        }
+
+        .node__link {
+            width: fit-content;
+            color: var(--color-accent);
+            border-bottom: var(--rule-thin) solid var(--color-accent);
+            padding-bottom: var(--space-3xs);
+        }
+
+        .node__link:hover {
+            color: var(--color-ink);
+        }
+
+        .node:hover {
+            border-color: var(--color-accent);
+        }
+
+        .map-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-md);
+            padding-top: var(--space-md);
+            color: var(--color-muted);
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+        }
+
+        .map-legend__item {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .map-legend__mark {
+            width: var(--space-xs);
+            height: var(--space-xs);
+            background: var(--color-accent);
+        }
+
+        .map-legend__line {
+            width: var(--space-xl);
+            height: var(--rule-thin);
+            background: var(--color-rule);
+        }
+
+        .foot-line {
+            border-top: var(--rule-thin) solid var(--color-rule);
+            padding-block: var(--space-md);
+            color: var(--color-muted);
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+        }
+
+        .foot-line p {
+            margin: 0;
+        }
+
+        @media (min-width: 40rem) {
+            .map-intro {
+                grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+                align-items: end;
+            }
+
+            .map-intro__copy {
+                padding-bottom: var(--space-sm);
+            }
+
+            .system-map {
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+                gap: var(--space-2xl);
+                padding-block: var(--space-2xl);
+            }
+
+        .system-map::before,
+        .system-map::after {
+            position: absolute;
+            top: 50%;
+            width: var(--space-2xl);
+            height: var(--rule-thin);
+            background: linear-gradient(90deg, var(--color-rule), var(--color-accent-soft), var(--color-rule));
+            content: '';
+        }
+
+            .system-map::before {
+                left: calc(33.333% - var(--space-xl));
+            }
+
+            .system-map::after {
+                right: calc(33.333% - var(--space-xl));
+            }
+
+            .node {
+                min-height: 15rem;
+            }
+        }
+
+        @keyframes reveal-fade {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .map-intro,
+        .system-map,
+        .map-legend {
+            animation: reveal-fade 520ms var(--ease-out) both;
+        }
+
+        .system-map {
+            animation-delay: 120ms;
+        }
+
+        .map-legend {
+            animation-delay: 240ms;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 150ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 150ms !important;
+            }
         }
     </style>
 </head>
-<body class="bg-[#020617] text-slate-300 h-screen w-full overflow-hidden flex flex-col selection:bg-blue-500 selection:text-white">
-    
-    <!-- Background Gradients -->
-    <div class="fixed inset-0 -z-10 h-full w-full pointer-events-none">
-        <div class="absolute top-0 left-1/4 w-[600px] h-[500px] bg-blue-600/20 blur-[130px] rounded-full mix-blend-screen opacity-60"></div>
-        <div class="absolute bottom-0 right-1/4 w-[600px] h-[500px] bg-purple-600/10 blur-[130px] rounded-full mix-blend-screen opacity-50"></div>
-        <div class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-100"></div>
+<body>
+    <div class="page">
+        <header class="nav-edge">
+            <a href="{{ url('/') }}" class="wordmark">{{ config('app.name', 'Rekening') }}</a>
+            @if (Route::has('login'))
+                @auth
+                    <a href="{{ url('/agent/dashboard') }}" class="access-link">Buka dashboard →</a>
+                @else
+                    <a href="{{ url('/agent/login') }}" class="access-link">Masuk agen →</a>
+                @endauth
+            @endif
+        </header>
+
+        <main class="map-layout">
+            <section class="map-intro" aria-labelledby="map-title">
+                <h1 id="map-title" class="map-intro__title">Satu alur. Setiap langkah tercatat.</h1>
+                <p class="map-intro__copy">Ruang kerja untuk menghubungkan data rekening, jaringan agen, dan proses pengiriman dalam satu alur operasional yang dapat ditelusuri.</p>
+            </section>
+
+            <section class="system-map" aria-label="Peta alur operasional">
+                <article class="node">
+                    <h2 class="node__title">Rekening</h2>
+                    <p class="node__copy">Data penting tersusun sebagai titik awal operasi, dengan akses yang terjaga.</p>
+                </article>
+
+                <article class="node">
+                    <h2 class="node__title">Agen</h2>
+                    <p class="node__copy">Jaringan kerja bergerak dari informasi yang sama, tanpa memutus konteks proses.</p>
+                    <a href="{{ url('/agent/login') }}" class="node__link">Masuk sebagai agen →</a>
+                </article>
+
+                <article class="node">
+                    <h2 class="node__title">Pengiriman</h2>
+                    <p class="node__copy">Setiap pengiriman tetap terhubung ke sumber informasi yang membentuknya.</p>
+                </article>
+            </section>
+
+            <div class="map-legend" aria-label="Keterangan peta">
+                <span class="map-legend__item"><span class="map-legend__mark" aria-hidden="true"></span>Titik kerja aktif</span>
+                <span class="map-legend__item"><span class="map-legend__line" aria-hidden="true"></span>Alur informasi</span>
+            </div>
+        </main>
+
+        <footer class="foot-line">
+            <p>{{ config('app.name', 'Rekening') }} · Sistem operasional terpadu</p>
+            <p>© {{ date('Y') }}</p>
+        </footer>
     </div>
-
-    <!-- Navigation -->
-    <nav class="glass-nav absolute w-full z-50 top-0 transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <div class="flex items-center justify-between h-20">
-                <div class="flex-shrink-0 flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20 ring-1 ring-white/20">
-                         <!-- Logo Icon -->
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                    </div>
-                    <span class="font-bold text-xl text-white tracking-tight">{{ config('app.name', 'Rekening') }}</span>
-                </div>
-                
-                <div>
-                     @if (Route::has('login'))
-                        <div class="flex items-center gap-4">
-                            @auth
-                                <a href="{{ url('/agent/dashboard') }}" class="px-5 py-2.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-all ring-1 ring-white/10 hover:ring-white/30">Dashboard</a>
-                            @else
-                                <a href="{{ url('/agent/login') }}" class="text-sm font-medium hover:text-white transition-colors">Log in</a>
-                                @if (Route::has('register'))
-                                    <a href="{{ route('register') }}" class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-sm font-medium shadow-lg shadow-blue-500/25 transition-all transform hover:scale-105 active:scale-95">Get Started</a>
-                                @endif
-                            @endauth
-                        </div>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="flex-1 flex items-center justify-center relative w-full px-4">
-        <!-- Neon Wrapper -->
-        <div class="relative p-[3px] rounded-3xl overflow-hidden group">
-            
-            <!-- Moving Neon Gradient (Sorop Neon Berjalan) -->
-            <div class="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_0_300deg,#60a5fa_330deg,#a855f7_360deg)] animate-[spin_4s_linear_infinite]"></div>
-            
-            <!-- Inner Content -->
-            <div class="relative bg-[#020617] rounded-[22px] px-8 py-12 md:px-16 md:py-20 text-center z-10">
-                <!-- Background glow behind text for extra pop -->
-                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-blue-500/20 blur-[60px] rounded-full pointer-events-none"></div>
-
-                <h1 class="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight text-white leading-tight">
-                    Manage your wealth<br>
-                    <span class="text-gradient">Integrity & Speed</span>
-                </h1>
-            </div>
-        </div>
-    </main>
-
 </body>
 </html>
