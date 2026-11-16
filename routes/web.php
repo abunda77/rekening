@@ -1,8 +1,12 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Livewire\Agent\Auth\Login as AgentLogin;
 use App\Livewire\Agent\Dashboard as AgentDashboard;
+use App\Livewire\Agent\HelpDesk;
+use App\Livewire\Agent\Shipment;
 use App\Livewire\Rekening\AccountCrud;
+use App\Livewire\Rekening\AccountStockCrud;
 use App\Livewire\Rekening\AgentCrud;
 use App\Livewire\Rekening\CardCrud;
 use App\Livewire\Rekening\CompanyAccountCrud;
@@ -21,7 +25,7 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-Route::get('dashboard', \App\Http\Controllers\DashboardController::class)
+Route::get('dashboard', DashboardController::class)
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
@@ -31,6 +35,7 @@ Route::middleware(['auth', 'verified'])->prefix('rekening')->group(function () {
     Route::get('/customers', CustomerCrud::class)->name('rekening.customers');
     Route::get('/accounts', AccountCrud::class)->name('rekening.accounts');
     Route::get('/company-accounts', CompanyAccountCrud::class)->name('rekening.company-accounts');
+    Route::get('/account-stocks', AccountStockCrud::class)->name('rekening.account-stocks');
     Route::get('/cards', CardCrud::class)->name('rekening.cards');
     Route::get('/complaints', ComplaintCrud::class)->name('rekening.complaints');
     Route::get('/shipments', ShipmentCrud::class)->name('rekening.shipments');
@@ -55,8 +60,8 @@ Route::middleware(['auth', 'verified'])->prefix('rekening')->group(function () {
 Route::prefix('agent')->name('agent.')->group(function () {
     Route::get('/login', AgentLogin::class)->middleware('guest:agent')->name('login');
     Route::get('/dashboard', AgentDashboard::class)->middleware('auth:agent')->name('dashboard');
-    Route::get('/help-desk', \App\Livewire\Agent\HelpDesk::class)->middleware('auth:agent')->name('help-desk');
-    Route::get('/shipment', \App\Livewire\Agent\Shipment::class)->middleware('auth:agent')->name('shipment');
+    Route::get('/help-desk', HelpDesk::class)->middleware('auth:agent')->name('help-desk');
+    Route::get('/shipment', Shipment::class)->middleware('auth:agent')->name('shipment');
 });
 
 require __DIR__.'/settings.php';

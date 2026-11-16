@@ -160,6 +160,15 @@
                     </x-slot:icon>
                     <span class="nav-item-text">{{ __('Rekening PT') }}</span>
                 </flux:sidebar.item>
+                <flux:sidebar.item :href="route('rekening.account-stocks')"
+                    :current="request()->routeIs('rekening.account-stocks')" wire:navigate>
+                    <x-slot:icon>
+                        <div class="sidebar-icon-wrapper {{ request()->routeIs('rekening.account-stocks') ? 'active' : '' }}">
+                            @include('flux::icon.archive-box')
+                        </div>
+                    </x-slot:icon>
+                    <span class="nav-item-text">{{ __('Stok Rekening') }}</span>
+                </flux:sidebar.item>
                 <flux:sidebar.item :href="route('rekening.cards')" :current="request()->routeIs('rekening.cards')"
                     wire:navigate>
                     <x-slot:icon>

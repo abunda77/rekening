@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use Database\Factories\AgentFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Str;
 
 class Agent extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\AgentFactory> */
+    /** @use HasFactory<AgentFactory> */
     use HasFactory, HasUuids;
 
     /**
@@ -31,7 +33,7 @@ class Agent extends Authenticatable
     {
         do {
             // Generate 5 character alphanumeric string (uppercase)
-            $code = strtoupper(\Illuminate\Support\Str::random(5));
+            $code = strtoupper(Str::random(5));
         } while (static::where('agent_code', $code)->exists());
 
         return $code;
@@ -88,6 +90,16 @@ class Agent extends Authenticatable
     public function companyAccounts(): HasMany
     {
         return $this->hasMany(CompanyAccount::class);
+    }
+
+    /**
+     * Get account stock owned by this agent.
+     *
+     * @return HasMany<AccountStock, $this>
+     */
+    public function accountStocks(): HasMany
+    {
+        return $this->hasMany(AccountStock::class);
     }
 
     /**
