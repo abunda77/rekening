@@ -52,6 +52,26 @@ it('creates an account stock', function () {
         ->and($stock->is_vip)->toBeTrue();
 });
 
+it('saves and reloads the note of an account stock', function () {
+    Livewire::actingAs($this->user)
+        ->test(AccountStockCrud::class)
+        ->call('openModal')
+        ->set('account_number', '4444555566')
+        ->set('bank_name', 'BCA')
+        ->set('note', 'rekening cadangan untuk agen baru')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $stock = AccountStock::query()->where('account_number', '4444555566')->firstOrFail();
+
+    expect($stock->note)->toBe('rekening cadangan untuk agen baru');
+
+    Livewire::actingAs($this->user)
+        ->test(AccountStockCrud::class)
+        ->call('openModal', $stock->id)
+        ->assertSet('note', 'rekening cadangan untuk agen baru');
+});
+
 it('requires account number and bank when saving', function () {
     Livewire::actingAs($this->user)
         ->test(AccountStockCrud::class)

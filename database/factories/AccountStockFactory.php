@@ -24,6 +24,7 @@ class AccountStockFactory extends Factory
             'agent_id' => null,
             'is_in_stock' => fake()->boolean(80),
             'user' => fake()->optional()->userName(),
+            'note' => null,
             'is_vip' => fake()->boolean(20),
             'image' => null,
         ];

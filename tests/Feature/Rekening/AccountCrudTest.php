@@ -5,11 +5,12 @@ use App\Models\Account;
 use App\Models\Agent;
 use App\Models\Customer;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -60,6 +61,27 @@ it('can create a new account', function () {
         'account_number' => '9999888877',
         'bank_name' => 'BRI',
     ]);
+});
+
+it('can search accounts by note', function () {
+    Account::factory()->create([
+        'account_number' => '3333444455',
+        'bank_name' => 'BCA',
+        'note' => 'rekening khusus payroll',
+        'customer_id' => $this->customer->id,
+    ]);
+    Account::factory()->create([
+        'account_number' => '6666777788',
+        'bank_name' => 'MANDIRI',
+        'note' => 'rekening operasional harian',
+        'customer_id' => $this->customer->id,
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test(AccountCrud::class)
+        ->set('search', 'payroll')
+        ->assertSee('3333444455')
+        ->assertDontSee('6666777788');
 });
 
 it('can filter accounts by status', function () {

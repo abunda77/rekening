@@ -233,6 +233,7 @@ class CompanyAccountCrud extends Component
                     $query->where('company_name', 'like', '%'.$this->search.'%')
                         ->orWhere('account_number', 'like', '%'.$this->search.'%')
                         ->orWhere('bank_name', 'like', '%'.$this->search.'%')
+                        ->orWhere('note', 'like', '%'.$this->search.'%')
                         ->orWhereHas('customer', fn (Builder $customer) => $customer->where('full_name', 'like', '%'.$this->search.'%'));
                 });
             })

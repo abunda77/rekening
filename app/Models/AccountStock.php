@@ -24,6 +24,7 @@ class AccountStock extends Model
         'agent_id',
         'is_in_stock',
         'user',
+        'note',
         'is_vip',
         'image',
     ];

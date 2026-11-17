@@ -42,6 +42,8 @@ class AccountStockCrud extends Component
 
     public string $userName = '';
 
+    public string $note = '';
+
     public bool $is_in_stock = true;
 
     public bool $is_vip = false;
@@ -107,6 +109,7 @@ class AccountStockCrud extends Component
             'bank_name' => 'required|string|max:100',
             'agent_id' => 'nullable|exists:agents,id',
             'userName' => 'nullable|string|max:255',
+            'note' => 'nullable|string|max:1000',
             'is_in_stock' => 'boolean',
             'is_vip' => 'boolean',
             'image' => 'nullable|image|max:2048',
@@ -154,6 +157,7 @@ class AccountStockCrud extends Component
             $this->bank_name = $stock->bank_name;
             $this->agent_id = $stock->agent_id ?? '';
             $this->userName = $stock->user ?? '';
+            $this->note = $stock->note ?? '';
             $this->is_in_stock = $stock->is_in_stock;
             $this->is_vip = $stock->is_vip;
         }
@@ -178,6 +182,7 @@ class AccountStockCrud extends Component
             'bank_name' => $this->bank_name,
             'agent_id' => $this->agent_id ?: null,
             'user' => $this->userName ?: null,
+            'note' => $this->note ?: null,
             'is_in_stock' => $this->is_in_stock,
             'is_vip' => $this->is_vip,
         ];
@@ -369,7 +374,7 @@ class AccountStockCrud extends Component
 
     private function resetForm(): void
     {
-        $this->reset(['account_number', 'bank_name', 'agent_id', 'userName', 'image']);
+        $this->reset(['account_number', 'bank_name', 'agent_id', 'userName', 'note', 'image']);
         $this->is_in_stock = true;
         $this->is_vip = false;
     }

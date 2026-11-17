@@ -244,12 +244,15 @@ class AccountCrud extends Component
         return Account::query()
             ->with(['customer', 'agent'])
             ->when($this->search, function ($query) {
-                $query->where('account_number', 'like', '%'.$this->search.'%')
-                    ->orWhere('bank_name', 'like', '%'.$this->search.'%')
-                    ->orWhereHas('customer', function ($q) {
-                        $q->where('full_name', 'like', '%'.$this->search.'%')
-                            ->orWhere('nik', 'like', '%'.$this->search.'%');
-                    });
+                $query->where(function ($query): void {
+                    $query->where('account_number', 'like', '%'.$this->search.'%')
+                        ->orWhere('bank_name', 'like', '%'.$this->search.'%')
+                        ->orWhere('note', 'like', '%'.$this->search.'%')
+                        ->orWhereHas('customer', function ($q) {
+                            $q->where('full_name', 'like', '%'.$this->search.'%')
+                                ->orWhere('nik', 'like', '%'.$this->search.'%');
+                        });
+                });
             })
             ->when($this->filterStatus, function ($query) {
                 $query->where('status', $this->filterStatus);

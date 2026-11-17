@@ -19,7 +19,7 @@
                 <div class="flex flex-wrap items-center gap-2">
                     <flux:input 
                         wire:model.live.debounce.300ms="search" 
-                        placeholder="Cari no. rekening, bank, nasabah..." 
+                        placeholder="Cari no. rekening, bank, nasabah, catatan..." 
                         icon="magnifying-glass"
                         class="w-72"
                     />

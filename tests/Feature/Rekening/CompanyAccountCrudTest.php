@@ -92,6 +92,25 @@ it('can update and delete a company account', function () {
     expect($account->fresh())->toBeNull();
 });
 
+it('can search company accounts by note', function () {
+    CompanyAccount::factory()->create([
+        'company_name' => 'PT Sumber Rejeki',
+        'account_number' => '7777888899',
+        'note' => 'rekening khusus dividen tahunan',
+    ]);
+    CompanyAccount::factory()->create([
+        'company_name' => 'PT Anugerah Abadi',
+        'account_number' => '1111222233',
+        'note' => 'rekening operasional gaji',
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test(CompanyAccountCrud::class)
+        ->set('search', 'dividen')
+        ->assertSee('7777888899')
+        ->assertDontSee('1111222233');
+});
+
 it('displays opening and expiry dates in the company account table', function () {
     CompanyAccount::factory()->create([
         'opening_date' => '2026-07-01',

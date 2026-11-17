@@ -202,6 +202,12 @@
                     </div>
 
                     <flux:field>
+                        <flux:label>Catatan</flux:label>
+                        <flux:textarea wire:model="note" rows="3" placeholder="Catatan tambahan untuk rekening ini (opsional)" />
+                        <flux:error name="note" />
+                    </flux:field>
+
+                    <flux:field>
                         <flux:label>Data Image</flux:label>
                         <flux:input type="file" wire:model="image" accept="image/*" />
                         <flux:error name="image" />
@@ -340,6 +346,12 @@
                                 @endif
                             </dd>
                         </div>
+                        @if ($viewingStock->note)
+                            <div class="md:col-span-2">
+                                <dt class="text-sm text-zinc-500 dark:text-zinc-400">Catatan</dt>
+                                <dd class="whitespace-pre-line text-zinc-900 dark:text-zinc-100">{{ $viewingStock->note }}</dd>
+                            </div>
+                        @endif
                         @if ($viewingStock->image)
                             <div class="md:col-span-2">
                                 <dt class="text-sm text-zinc-500 dark:text-zinc-400">Data Image</dt>

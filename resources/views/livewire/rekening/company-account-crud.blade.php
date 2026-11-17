@@ -12,7 +12,7 @@
         <div class="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex flex-col gap-2 sm:flex-row">
-                    <flux:input wire:model.live.debounce.300ms="search" placeholder="Cari PT, rekening, bank, nasabah..."
+                    <flux:input wire:model.live.debounce.300ms="search" placeholder="Cari PT, rekening, bank, nasabah, catatan..."
                         icon="magnifying-glass" class="sm:w-80" />
                     <flux:select wire:model.live="filterStatus" class="sm:w-40">
                         <option value="">Semua Status</option>
