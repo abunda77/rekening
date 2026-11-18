@@ -45,18 +45,18 @@
             </div>
         </div>
 
-        {{-- Expiring Accounts Table --}}
+        {{-- Rekening Bank - Expired Bulan Ini --}}
         <div class="relative flex h-full flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800">
             <div class="border-b border-neutral-200 px-6 py-4 dark:border-neutral-700">
-                <h3 class="text-lg font-medium text-neutral-900 dark:text-white">Accounts Expiring This Month</h3>
+                <h3 class="text-lg font-medium text-neutral-900 dark:text-white">Rekening Bank — Expired Bulan Ini</h3>
             </div>
-            
+
             <div class="flex-1 overflow-auto">
                 <table class="w-full text-left text-sm text-neutral-600 dark:text-neutral-400">
-                    <thead class="bg-neutral-50 border-b border-neutral-200 text-xs uppercase text-neutral-500 dark:bg-neutral-700/50 dark:border-neutral-700 dark:text-neutral-300">
+                    <thead class="border-b border-neutral-200 bg-neutral-50 text-xs uppercase text-neutral-500 dark:border-neutral-700 dark:bg-neutral-700/50 dark:text-neutral-300">
                         <tr>
-                            <th scope="col" class="px-6 py-3">Account Number</th>
-                            <th scope="col" class="px-6 py-3">Customer</th>
+                            <th scope="col" class="px-6 py-3">Nomor Rekening</th>
+                            <th scope="col" class="px-6 py-3">Nasabah</th>
                             <th scope="col" class="px-6 py-3">Agent</th>
                             <th scope="col" class="px-6 py-3">Bank</th>
                             <th scope="col" class="px-6 py-3">Expired On</th>
@@ -67,47 +67,93 @@
                         @forelse ($expiringAccounts as $account)
                             <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-700/25">
                                 <td class="px-6 py-4 font-medium text-neutral-900 dark:text-white">{{ $account->account_number }}</td>
-                                <td class="px-6 py-4">{{ $account->customer->full_name ?? '-' }}</td>
-                                <td class="px-6 py-4">{{ $account->agent->agent_name ?? '-' }}</td>
+                                <td class="px-6 py-4">{{ $account->customer?->full_name ?? '-' }}</td>
+                                <td class="px-6 py-4">{{ $account->agent?->agent_name ?? '-' }}</td>
                                 <td class="px-6 py-4">{{ $account->bank_name }}</td>
-                                <td class="px-6 py-4">{{ $account->expired_on?->format('d M Y') }}</td>
+                                <td class="whitespace-nowrap px-6 py-4">{{ $account->expired_on?->format('d M Y') ?? '-' }}</td>
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium {{ $account->status === 'active' ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-400/10 dark:text-green-400 dark:ring-green-400/20' : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-400/10 dark:text-red-400 dark:ring-red-400/20' }}">
-                                        {{ ucfirst($account->status) }}
-                                    </span>
+                                    <x-rekening.status-badge :status="$account->status" />
                                 </td>
                             </tr>
                         @empty
                             <tr>
                                 <td colspan="6" class="px-6 py-12 text-center text-neutral-500 dark:text-neutral-400">
-                                    No accounts found expiring this month.
+                                    Belum ada rekening bank yang expired bulan ini.
                                 </td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-            
-            @if($expiringAccounts->hasPages())
+
+            @if ($expiringAccounts->hasPages())
                 <div class="border-t border-neutral-200 px-6 py-4 dark:border-neutral-700">
                     {{ $expiringAccounts->links() }}
                 </div>
             @endif
         </div>
 
-        {{-- Expiring Company Accounts Table --}}
-        <div class="relative flex h-full flex-col overflow-hidden rounded-xl border border-cyan-200 bg-white dark:border-cyan-800 dark:bg-neutral-800">
-            <div class="border-b border-cyan-200 bg-gradient-to-r from-cyan-50 to-sky-50 px-6 py-4 dark:border-cyan-800 dark:from-cyan-950/30 dark:to-sky-950/30">
-                <h3 class="text-lg font-medium text-cyan-900 dark:text-cyan-100">Company Accounts Expiring This Month</h3>
+        {{-- Rekening Bank - Expired Bulan Depan --}}
+        <div class="relative flex h-full flex-col overflow-hidden rounded-xl border border-indigo-200 bg-white dark:border-indigo-800 dark:bg-neutral-800">
+            <div class="border-b border-indigo-200 bg-gradient-to-r from-indigo-50 to-blue-50 px-6 py-4 dark:border-indigo-800 dark:from-indigo-950/30 dark:to-blue-950/30">
+                <h3 class="text-lg font-medium text-indigo-900 dark:text-indigo-100">Rekening Bank — Expired Bulan Depan</h3>
             </div>
 
             <div class="flex-1 overflow-auto">
                 <table class="w-full text-left text-sm text-neutral-600 dark:text-neutral-400">
                     <thead class="border-b border-neutral-200 bg-neutral-50 text-xs uppercase text-neutral-500 dark:border-neutral-700 dark:bg-neutral-700/50 dark:text-neutral-300">
                         <tr>
-                            <th scope="col" class="px-6 py-3">Company</th>
-                            <th scope="col" class="px-6 py-3">Account Number</th>
-                            <th scope="col" class="px-6 py-3">Customer</th>
+                            <th scope="col" class="px-6 py-3">Nomor Rekening</th>
+                            <th scope="col" class="px-6 py-3">Nasabah</th>
+                            <th scope="col" class="px-6 py-3">Agent</th>
+                            <th scope="col" class="px-6 py-3">Bank</th>
+                            <th scope="col" class="px-6 py-3">Expired On</th>
+                            <th scope="col" class="px-6 py-3">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">
+                        @forelse ($nextMonthAccounts as $account)
+                            <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-700/25">
+                                <td class="px-6 py-4 font-medium text-neutral-900 dark:text-white">{{ $account->account_number }}</td>
+                                <td class="px-6 py-4">{{ $account->customer?->full_name ?? '-' }}</td>
+                                <td class="px-6 py-4">{{ $account->agent?->agent_name ?? '-' }}</td>
+                                <td class="px-6 py-4">{{ $account->bank_name }}</td>
+                                <td class="whitespace-nowrap px-6 py-4">{{ $account->expired_on?->format('d M Y') ?? '-' }}</td>
+                                <td class="px-6 py-4">
+                                    <x-rekening.status-badge :status="$account->status" />
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center text-neutral-500 dark:text-neutral-400">
+                                    Belum ada rekening bank yang expired bulan depan.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            @if ($nextMonthAccounts->hasPages())
+                <div class="border-t border-neutral-200 px-6 py-4 dark:border-neutral-700">
+                    {{ $nextMonthAccounts->links() }}
+                </div>
+            @endif
+        </div>
+
+        {{-- Rekening PT - Expired Bulan Ini --}}
+        <div class="relative flex h-full flex-col overflow-hidden rounded-xl border border-cyan-200 bg-white dark:border-cyan-800 dark:bg-neutral-800">
+            <div class="border-b border-cyan-200 bg-gradient-to-r from-cyan-50 to-sky-50 px-6 py-4 dark:border-cyan-800 dark:from-cyan-950/30 dark:to-sky-950/30">
+                <h3 class="text-lg font-medium text-cyan-900 dark:text-cyan-100">Rekening PT — Expired Bulan Ini</h3>
+            </div>
+
+            <div class="flex-1 overflow-auto">
+                <table class="w-full text-left text-sm text-neutral-600 dark:text-neutral-400">
+                    <thead class="border-b border-neutral-200 bg-neutral-50 text-xs uppercase text-neutral-500 dark:border-neutral-700 dark:bg-neutral-700/50 dark:text-neutral-300">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Perusahaan</th>
+                            <th scope="col" class="px-6 py-3">Nomor Rekening</th>
+                            <th scope="col" class="px-6 py-3">Nasabah</th>
                             <th scope="col" class="px-6 py-3">Agent</th>
                             <th scope="col" class="px-6 py-3">Bank</th>
                             <th scope="col" class="px-6 py-3">Expired On</th>
@@ -122,17 +168,15 @@
                                 <td class="px-6 py-4">{{ $account->customer?->full_name ?? '-' }}</td>
                                 <td class="px-6 py-4">{{ $account->agent?->agent_name ?? '-' }}</td>
                                 <td class="px-6 py-4">{{ $account->bank_name }}</td>
-                                <td class="whitespace-nowrap px-6 py-4">{{ $account->expired_on?->format('d M Y') }}</td>
+                                <td class="whitespace-nowrap px-6 py-4">{{ $account->expired_on?->format('d M Y') ?? '-' }}</td>
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium {{ $account->status === 'aktif' ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-400/10 dark:text-green-400 dark:ring-green-400/20' : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-400/10 dark:text-red-400 dark:ring-red-400/20' }}">
-                                        {{ ucfirst($account->status) }}
-                                    </span>
+                                    <x-rekening.status-badge :status="$account->status" />
                                 </td>
                             </tr>
                         @empty
                             <tr>
                                 <td colspan="7" class="px-6 py-12 text-center text-neutral-500 dark:text-neutral-400">
-                                    No company accounts found expiring this month.
+                                    Belum ada rekening PT yang expired bulan ini.
                                 </td>
                             </tr>
                         @endforelse
@@ -143,6 +187,56 @@
             @if ($expiringCompanyAccounts->hasPages())
                 <div class="border-t border-neutral-200 px-6 py-4 dark:border-neutral-700">
                     {{ $expiringCompanyAccounts->links() }}
+                </div>
+            @endif
+        </div>
+
+        {{-- Rekening PT - Expired Bulan Depan --}}
+        <div class="relative flex h-full flex-col overflow-hidden rounded-xl border border-teal-200 bg-white dark:border-teal-800 dark:bg-neutral-800">
+            <div class="border-b border-teal-200 bg-gradient-to-r from-teal-50 to-emerald-50 px-6 py-4 dark:border-teal-800 dark:from-teal-950/30 dark:to-emerald-950/30">
+                <h3 class="text-lg font-medium text-teal-900 dark:text-teal-100">Rekening PT — Expired Bulan Depan</h3>
+            </div>
+
+            <div class="flex-1 overflow-auto">
+                <table class="w-full text-left text-sm text-neutral-600 dark:text-neutral-400">
+                    <thead class="border-b border-neutral-200 bg-neutral-50 text-xs uppercase text-neutral-500 dark:border-neutral-700 dark:bg-neutral-700/50 dark:text-neutral-300">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Perusahaan</th>
+                            <th scope="col" class="px-6 py-3">Nomor Rekening</th>
+                            <th scope="col" class="px-6 py-3">Nasabah</th>
+                            <th scope="col" class="px-6 py-3">Agent</th>
+                            <th scope="col" class="px-6 py-3">Bank</th>
+                            <th scope="col" class="px-6 py-3">Expired On</th>
+                            <th scope="col" class="px-6 py-3">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">
+                        @forelse ($nextMonthCompanyAccounts as $account)
+                            <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-700/25">
+                                <td class="px-6 py-4 font-medium text-neutral-900 dark:text-white">{{ $account->company_name }}</td>
+                                <td class="px-6 py-4 font-mono">{{ $account->account_number }}</td>
+                                <td class="px-6 py-4">{{ $account->customer?->full_name ?? '-' }}</td>
+                                <td class="px-6 py-4">{{ $account->agent?->agent_name ?? '-' }}</td>
+                                <td class="px-6 py-4">{{ $account->bank_name }}</td>
+                                <td class="whitespace-nowrap px-6 py-4">{{ $account->expired_on?->format('d M Y') ?? '-' }}</td>
+                                <td class="px-6 py-4">
+                                    <x-rekening.status-badge :status="$account->status" />
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="px-6 py-12 text-center text-neutral-500 dark:text-neutral-400">
+                                    Belum ada rekening PT yang expired bulan depan.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            @if ($nextMonthCompanyAccounts->hasPages())
+                <div class="border-t border-neutral-200 px-6 py-4 dark:border-neutral-700">
+                    {{ $nextMonthCompanyAccounts->links() }}
                 </div>
             @endif
         </div>

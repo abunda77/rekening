@@ -102,7 +102,74 @@ test('dashboard displays company accounts expiring this month', function () {
         ->assertViewHas('expiringCompanyAccounts', function ($accounts) use ($expiringCompanyAccount, $futureCompanyAccount) {
             return $accounts->contains($expiringCompanyAccount) && ! $accounts->contains($futureCompanyAccount);
         })
-        ->assertSee('Company Accounts Expiring This Month')
-        ->assertSee('PT Expiring This Month')
-        ->assertDontSee('PT Expiring Next Month');
+        ->assertSee('Rekening PT — Expired Bulan Ini')
+        ->assertSee('PT Expiring This Month');
+});
+
+test('dashboard displays accounts expiring next month', function () {
+    $user = User::factory()->create();
+
+    $nextMonthAccount = Account::factory()->create([
+        'account_number' => '1111222233',
+        'expired_on' => now()->startOfMonth()->addMonth()->addDays(3),
+    ]);
+    $thisMonthAccount = Account::factory()->create([
+        'account_number' => '9999888877',
+        'expired_on' => now()->startOfMonth(),
+    ]);
+
+    $this->actingAs($user)
+        ->get('/dashboard')
+        ->assertOk()
+        ->assertViewHas('nextMonthAccounts', function ($accounts) use ($nextMonthAccount, $thisMonthAccount) {
+            return $accounts->contains($nextMonthAccount) && ! $accounts->contains($thisMonthAccount);
+        })
+        ->assertSee('Rekening Bank — Expired Bulan Depan')
+        ->assertSee('1111222233');
+});
+
+test('dashboard displays company accounts expiring next month', function () {
+    $user = User::factory()->create();
+
+    $nextMonthCompanyAccount = CompanyAccount::factory()->create([
+        'company_name' => 'PT Expired Bulan Depan',
+        'expired_on' => now()->startOfMonth()->addMonth()->addDays(3),
+    ]);
+    $thisMonthCompanyAccount = CompanyAccount::factory()->create([
+        'company_name' => 'PT Expired Bulan Ini Saja',
+        'expired_on' => now()->startOfMonth(),
+    ]);
+
+    $this->actingAs($user)
+        ->get('/dashboard')
+        ->assertOk()
+        ->assertViewHas('nextMonthCompanyAccounts', function ($accounts) use ($nextMonthCompanyAccount, $thisMonthCompanyAccount) {
+            return $accounts->contains($nextMonthCompanyAccount) && ! $accounts->contains($thisMonthCompanyAccount);
+        })
+        ->assertSee('Rekening PT — Expired Bulan Depan')
+        ->assertSee('PT Expired Bulan Depan');
+});
+
+test('dashboard displays account status label in indonesian', function () {
+    $user = User::factory()->create();
+
+    Account::factory()->create([
+        'status' => 'aktif',
+        'expired_on' => now()->startOfMonth(),
+    ]);
+    Account::factory()->create([
+        'status' => 'bermasalah',
+        'expired_on' => now()->startOfMonth(),
+    ]);
+    Account::factory()->create([
+        'status' => 'nonaktif',
+        'expired_on' => now()->startOfMonth(),
+    ]);
+
+    $this->actingAs($user)
+        ->get('/dashboard')
+        ->assertOk()
+        ->assertSee('Aktif')
+        ->assertSee('Bermasalah')
+        ->assertSee('Non-Aktif');
 });
