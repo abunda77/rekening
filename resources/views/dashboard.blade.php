@@ -47,8 +47,11 @@
 
         {{-- Rekening Bank - Expired Bulan Ini --}}
         <div class="relative flex h-full flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800">
-            <div class="border-b border-neutral-200 px-6 py-4 dark:border-neutral-700">
-                <h3 class="text-lg font-medium text-neutral-900 dark:text-white">Rekening Bank — Expired Bulan Ini</h3>
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-200 px-6 py-4 dark:border-neutral-700">
+                <h3 class="text-lg font-medium text-neutral-900 dark:text-white">{{ $titles['bank-this-month'] }}</h3>
+                <flux:button size="sm" variant="outline" icon="document-text" href="{{ route('dashboard.export-pdf', 'bank-this-month') }}">
+                    Export PDF
+                </flux:button>
             </div>
 
             <div class="flex-1 overflow-auto">
@@ -95,8 +98,11 @@
 
         {{-- Rekening Bank - Expired Bulan Depan --}}
         <div class="relative flex h-full flex-col overflow-hidden rounded-xl border border-indigo-200 bg-white dark:border-indigo-800 dark:bg-neutral-800">
-            <div class="border-b border-indigo-200 bg-gradient-to-r from-indigo-50 to-blue-50 px-6 py-4 dark:border-indigo-800 dark:from-indigo-950/30 dark:to-blue-950/30">
-                <h3 class="text-lg font-medium text-indigo-900 dark:text-indigo-100">Rekening Bank — Expired Bulan Depan</h3>
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-indigo-200 bg-gradient-to-r from-indigo-50 to-blue-50 px-6 py-4 dark:border-indigo-800 dark:from-indigo-950/30 dark:to-blue-950/30">
+                <h3 class="text-lg font-medium text-indigo-900 dark:text-indigo-100">{{ $titles['bank-next-month'] }}</h3>
+                <flux:button size="sm" variant="outline" icon="document-text" href="{{ route('dashboard.export-pdf', 'bank-next-month') }}">
+                    Export PDF
+                </flux:button>
             </div>
 
             <div class="flex-1 overflow-auto">
@@ -143,8 +149,11 @@
 
         {{-- Rekening PT - Expired Bulan Ini --}}
         <div class="relative flex h-full flex-col overflow-hidden rounded-xl border border-cyan-200 bg-white dark:border-cyan-800 dark:bg-neutral-800">
-            <div class="border-b border-cyan-200 bg-gradient-to-r from-cyan-50 to-sky-50 px-6 py-4 dark:border-cyan-800 dark:from-cyan-950/30 dark:to-sky-950/30">
-                <h3 class="text-lg font-medium text-cyan-900 dark:text-cyan-100">Rekening PT — Expired Bulan Ini</h3>
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-cyan-200 bg-gradient-to-r from-cyan-50 to-sky-50 px-6 py-4 dark:border-cyan-800 dark:from-cyan-950/30 dark:to-sky-950/30">
+                <h3 class="text-lg font-medium text-cyan-900 dark:text-cyan-100">{{ $titles['pt-this-month'] }}</h3>
+                <flux:button size="sm" variant="outline" icon="document-text" href="{{ route('dashboard.export-pdf', 'pt-this-month') }}">
+                    Export PDF
+                </flux:button>
             </div>
 
             <div class="flex-1 overflow-auto">
@@ -193,8 +202,11 @@
 
         {{-- Rekening PT - Expired Bulan Depan --}}
         <div class="relative flex h-full flex-col overflow-hidden rounded-xl border border-teal-200 bg-white dark:border-teal-800 dark:bg-neutral-800">
-            <div class="border-b border-teal-200 bg-gradient-to-r from-teal-50 to-emerald-50 px-6 py-4 dark:border-teal-800 dark:from-teal-950/30 dark:to-emerald-950/30">
-                <h3 class="text-lg font-medium text-teal-900 dark:text-teal-100">Rekening PT — Expired Bulan Depan</h3>
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-teal-200 bg-gradient-to-r from-teal-50 to-emerald-50 px-6 py-4 dark:border-teal-800 dark:from-teal-950/30 dark:to-emerald-950/30">
+                <h3 class="text-lg font-medium text-teal-900 dark:text-teal-100">{{ $titles['pt-next-month'] }}</h3>
+                <flux:button size="sm" variant="outline" icon="document-text" href="{{ route('dashboard.export-pdf', 'pt-next-month') }}">
+                    Export PDF
+                </flux:button>
             </div>
 
             <div class="flex-1 overflow-auto">

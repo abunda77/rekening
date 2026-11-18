@@ -160,8 +160,16 @@
                     </x-slot:icon>
                     <span class="nav-item-text">{{ __('Rekening PT') }}</span>
                 </flux:sidebar.item>
-                <flux:sidebar.item :href="route('rekening.account-stocks')"
-                    :current="request()->routeIs('rekening.account-stocks')" wire:navigate>
+                <flux:sidebar.item :href="route('rekening.expired-accounts')"
+                    :current="request()->routeIs('rekening.expired-accounts')" wire:navigate>
+                    <x-slot:icon>
+                        <div class="sidebar-icon-wrapper {{ request()->routeIs('rekening.expired-accounts') ? 'active' : '' }}">
+                            @include('flux::icon.clock')
+                        </div>
+                    </x-slot:icon>
+                    <span class="nav-item-text">{{ __('Rekening Expired') }}</span>
+                </flux:sidebar.item>
+                <flux:sidebar.item :href="route('rekening.account-stocks')"                    :current="request()->routeIs('rekening.account-stocks')" wire:navigate>
                     <x-slot:icon>
                         <div class="sidebar-icon-wrapper {{ request()->routeIs('rekening.account-stocks') ? 'active' : '' }}">
                             @include('flux::icon.archive-box')

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExpiredAccountExportController;
 use App\Livewire\Agent\Auth\Login as AgentLogin;
 use App\Livewire\Agent\Dashboard as AgentDashboard;
 use App\Livewire\Agent\HelpDesk;
@@ -13,6 +14,7 @@ use App\Livewire\Rekening\CompanyAccountCrud;
 use App\Livewire\Rekening\ComplaintCrud;
 use App\Livewire\Rekening\CustomerCrud;
 use App\Livewire\Rekening\DatabaseBackupCrud;
+use App\Livewire\Rekening\ExpiredAccount;
 use App\Livewire\Rekening\NoteCrud;
 use App\Livewire\Rekening\PermissionCrud;
 use App\Livewire\Rekening\RoleCrud;
@@ -29,12 +31,18 @@ Route::get('dashboard', DashboardController::class)
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+Route::get('dashboard/export/{type}', [DashboardController::class, 'exportPdf'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard.export-pdf');
+
 // Rekening Management Routes
 Route::middleware(['auth', 'verified'])->prefix('rekening')->group(function () {
     Route::get('/agents', AgentCrud::class)->name('rekening.agents');
     Route::get('/customers', CustomerCrud::class)->name('rekening.customers');
     Route::get('/accounts', AccountCrud::class)->name('rekening.accounts');
     Route::get('/company-accounts', CompanyAccountCrud::class)->name('rekening.company-accounts');
+    Route::get('/expired-accounts', ExpiredAccount::class)->name('rekening.expired-accounts');
+    Route::get('/expired-accounts/export', ExpiredAccountExportController::class)->name('rekening.expired-accounts.export');
     Route::get('/account-stocks', AccountStockCrud::class)->name('rekening.account-stocks');
     Route::get('/cards', CardCrud::class)->name('rekening.cards');
     Route::get('/complaints', ComplaintCrud::class)->name('rekening.complaints');

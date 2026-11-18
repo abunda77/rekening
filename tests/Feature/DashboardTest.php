@@ -173,3 +173,76 @@ test('dashboard displays account status label in indonesian', function () {
         ->assertSee('Bermasalah')
         ->assertSee('Non-Aktif');
 });
+
+test('dashboard exports each expired table to pdf', function (string $type, string $filename) {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->get("/dashboard/export/{$type}");
+
+    $response->assertOk()->assertDownload($filename);
+
+    expect($response->headers->get('content-type'))->toContain('application/pdf');
+})->with([
+    ['bank-this-month', 'rekening-bank-expired-bulan-ini.pdf'],
+    ['bank-next-month', 'rekening-bank-expired-bulan-depan.pdf'],
+    ['pt-this-month', 'rekening-pt-expired-bulan-ini.pdf'],
+    ['pt-next-month', 'rekening-pt-expired-bulan-depan.pdf'],
+]);
+
+test('dashboard pdf export matches the selected table and period', function () {
+    $user = User::factory()->create();
+
+    // The text layer of a dompdf document is Flate-compressed, so decode it before searching.
+    $pdfText = function (string $type) use ($user): string {
+        $pdf = $this->actingAs($user)
+            ->get("/dashboard/export/{$type}")
+            ->assertOk()
+            ->streamedContent();
+
+        preg_match_all('/stream\r?\n(.*?)\r?\nendstream/s', $pdf, $matches);
+
+        return collect($matches[1])
+            ->map(fn (string $chunk) => gzuncompress($chunk) ?: $chunk)
+            ->implode("\n");
+    };
+
+    Account::factory()->create([
+        'account_number' => '5555444433',
+        'expired_on' => now()->startOfMonth()->addMonth()->addDays(3),
+    ]);
+    Account::factory()->create([
+        'account_number' => '7777666655',
+        'expired_on' => now()->startOfMonth(),
+    ]);
+    CompanyAccount::factory()->create([
+        'company_name' => 'PT Uji Export',
+        'expired_on' => now()->startOfMonth(),
+    ]);
+
+    $bankNextMonth = $pdfText('bank-next-month');
+
+    expect($bankNextMonth)
+        ->toContain('5555444433')
+        ->not->toContain('7777666655')
+        ->not->toContain('Perusahaan');
+
+    $ptThisMonth = $pdfText('pt-this-month');
+
+    expect($ptThisMonth)
+        ->toContain('Perusahaan')
+        ->toContain('PT Uji Export')
+        ->not->toContain('PT Uji Export Tidak Ada');
+});
+
+test('dashboard pdf export rejects unknown table type', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get('/dashboard/export/unknown-type')
+        ->assertNotFound();
+});
+
+test('dashboard pdf export requires authentication', function () {
+    $this->get('/dashboard/export/bank-this-month')
+        ->assertRedirect('/login');
+});
