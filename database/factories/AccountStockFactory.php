@@ -20,7 +20,9 @@ class AccountStockFactory extends Factory
     {
         return [
             'account_number' => fake()->unique()->numerify('##########'),
+            'customer_name' => fake()->optional()->name(),
             'bank_name' => fake()->randomElement(['BCA', 'BRI', 'BNI', 'MANDIRI', 'CIMB']),
+            'account_type' => fake()->randomElement([AccountStock::TYPE_PERSONAL, AccountStock::TYPE_PERSONAL, AccountStock::TYPE_PT]),
             'agent_id' => null,
             'is_in_stock' => fake()->boolean(80),
             'user' => fake()->optional()->userName(),

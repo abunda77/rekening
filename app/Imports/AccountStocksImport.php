@@ -12,7 +12,7 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
  * Bulk import stok rekening from a spreadsheet (xlsx/xls/csv).
  *
  * Recognised headings (case insensitive, separator agnostic):
- * No. Rek | Bank | Agent | In Stock | User | VIP
+ * No. Rek | Nama Nasabah/PT | Bank | Tipe | Agent | In Stock | User | VIP
  */
 class AccountStocksImport implements ToCollection, WithHeadingRow
 {
@@ -69,13 +69,20 @@ class AccountStocksImport implements ToCollection, WithHeadingRow
 
             $stock = AccountStock::query()->firstOrNew(['account_number' => (string) $accountNumber]);
 
+            $accountType = $this->firstValue($row, ['tipe', 'type', 'account_type', 'jenis']);
+
             $stock->fill([
+                'customer_name' => $this->firstValue($row, ['nama_nasabah', 'nasabah', 'customer_name', 'nama']),
                 'bank_name' => $bankName !== '' ? strtoupper($bankName) : 'LAINNYA',
                 'agent_id' => $agentId,
                 'is_in_stock' => $this->parseBoolean($this->firstValue($row, ['in_stock', 'instock', 'stock']), true),
                 'user' => $this->firstValue($row, ['user', 'user_name', 'username']),
                 'is_vip' => $this->parseBoolean($this->firstValue($row, ['vip', 'is_vip']), false),
             ]);
+
+            if ($accountType !== null) {
+                $stock->account_type = $this->parseAccountType($accountType);
+            }
 
             $isNew = ! $stock->exists;
             $stock->save();
@@ -110,6 +117,17 @@ class AccountStocksImport implements ToCollection, WithHeadingRow
         return $this->agentsByCode[strtoupper($value)]
             ?? $this->agentsByName[strtolower($value)]
             ?? null;
+    }
+
+    private function parseAccountType(string $value): string
+    {
+        $normalized = strtolower($value);
+
+        if (in_array($normalized, ['pt', 'perseroan', 'badan', 'perusahaan', 'company'], true)) {
+            return AccountStock::TYPE_PT;
+        }
+
+        return AccountStock::TYPE_PERSONAL;
     }
 
     private function parseBoolean(?string $value, bool $default): bool

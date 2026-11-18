@@ -15,12 +15,18 @@
         <div class="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                    <flux:input wire:model.live.debounce.300ms="search" placeholder="Cari no. rekening, bank, agent, user..."
+                    <flux:input wire:model.live.debounce.300ms="search" placeholder="Cari no. rekening, nasabah, bank, agent, user, catatan..."
                         icon="magnifying-glass" class="sm:w-72" />
                     <flux:select wire:model.live="filterInStock" class="sm:w-40">
                         <option value="">Semua Stok</option>
                         <option value="yes">In Stock</option>
                         <option value="no">Out of Stock</option>
+                    </flux:select>
+                    <flux:select wire:model.live="filterType" class="sm:w-40">
+                        <option value="">Semua Tipe</option>
+                        @foreach (\App\Models\AccountStock::TYPES as $value => $label)
+                            <option value="{{ $value }}">{{ $label }}</option>
+                        @endforeach
                     </flux:select>
                     <flux:select wire:model.live="filterVip" class="sm:w-36">
                         <option value="">Semua VIP</option>
@@ -65,7 +71,19 @@
                                     <span class="ml-1">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
                                 @endif
                             </th>
-                            <th class="px-4 py-3 font-semibold">Agent</th>
+                            <th class="cursor-pointer px-4 py-3 font-semibold" wire:click="sortBy('account_type')">
+                                Tipe
+                                @if ($sortField === 'account_type')
+                                    <span class="ml-1">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                                @endif
+                            </th>
+                            <th class="cursor-pointer px-4 py-3 font-semibold" wire:click="sortBy('customer_name')">
+                                Nama Nasabah/PT
+                                @if ($sortField === 'customer_name')
+                                    <span class="ml-1">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                                @endif
+                            </th>
+                            <th class="px-4 py-3 font-semibold">User</th>
                             <th class="cursor-pointer px-4 py-3 font-semibold" wire:click="sortBy('is_in_stock')">
                                 In Stock
                                 @if ($sortField === 'is_in_stock')
@@ -73,7 +91,7 @@
                                 @endif
                             </th>
                             <th class="cursor-pointer px-4 py-3 font-semibold" wire:click="sortBy('user')">
-                                User
+                                Agent
                                 @if ($sortField === 'user')
                                     <span class="ml-1">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
                                 @endif
@@ -96,6 +114,14 @@
                                 </td>
                                 <td class="px-4 py-3 font-mono text-blue-600 dark:text-blue-400">{{ $stock->account_number }}</td>
                                 <td class="px-4 py-3 font-medium text-zinc-900 dark:text-zinc-100">{{ $stock->bank_name }}</td>
+                                <td class="px-4 py-3">
+                                    @if ($stock->account_type === \App\Models\AccountStock::TYPE_PT)
+                                        <flux:badge color="amber">{{ $stock->typeLabel() }}</flux:badge>
+                                    @else
+                                        <flux:badge color="blue">{{ $stock->typeLabel() }}</flux:badge>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-3 text-zinc-900 dark:text-zinc-100">{{ $stock->customer_name ?? '-' }}</td>
                                 <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400">
                                     {{ $stock->agent?->agent_name ?? '-' }}
                                     @if ($stock->agent)
@@ -139,7 +165,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">Belum ada data stok rekening.</td>
+                                <td colspan="11" class="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">Belum ada data stok rekening.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -165,6 +191,11 @@
                             <flux:error name="account_number" />
                         </flux:field>
                         <flux:field>
+                            <flux:label>Nama Nasabah/PT</flux:label>
+                            <flux:input wire:model="customer_name" placeholder="Nama nasabah atau badan/PT" />
+                            <flux:error name="customer_name" />
+                        </flux:field>
+                        <flux:field>
                             <flux:label>Bank</flux:label>
                             <flux:select wire:model="bank_name">
                                 <option value="">Pilih bank...</option>
@@ -173,6 +204,15 @@
                                 @endforeach
                             </flux:select>
                             <flux:error name="bank_name" />
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>Tipe</flux:label>
+                            <flux:select wire:model="account_type">
+                                @foreach (\App\Models\AccountStock::TYPES as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            </flux:select>
+                            <flux:error name="account_type" />
                         </flux:field>
                         <flux:field>
                             <flux:label>User</flux:label>
@@ -274,7 +314,7 @@
                         <flux:input type="file" wire:model="bulkFile" accept=".xlsx,.xls,.csv" />
                         <flux:error name="bulkFile" />
                         <flux:description>
-                            Kolom yang dikenali: No. Rek, Bank, Agent, In Stock (Yes/No), User, VIP (Yes/No).
+                            Kolom yang dikenali: No. Rek, Nama Nasabah/PT, Bank, Tipe (Personal/PT), Agent, In Stock (Yes/No), User, VIP (Yes/No).
                             Baris dengan no. rekening yang sudah ada akan diperbarui.
                         </flux:description>
                     </flux:field>
@@ -310,8 +350,22 @@
                             <dd class="font-mono font-medium text-blue-600 dark:text-blue-400">{{ $viewingStock->account_number }}</dd>
                         </div>
                         <div>
+                            <dt class="text-sm text-zinc-500 dark:text-zinc-400">Nama Nasabah/PT</dt>
+                            <dd class="text-zinc-900 dark:text-zinc-100">{{ $viewingStock->customer_name ?? '-' }}</dd>
+                        </div>
+                        <div>
                             <dt class="text-sm text-zinc-500 dark:text-zinc-400">Bank</dt>
                             <dd class="font-medium text-zinc-900 dark:text-zinc-100">{{ $viewingStock->bank_name }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm text-zinc-500 dark:text-zinc-400">Tipe</dt>
+                            <dd class="mt-1">
+                                @if ($viewingStock->account_type === \App\Models\AccountStock::TYPE_PT)
+                                    <flux:badge color="amber">{{ $viewingStock->typeLabel() }}</flux:badge>
+                                @else
+                                    <flux:badge color="blue">{{ $viewingStock->typeLabel() }}</flux:badge>
+                                @endif
+                            </dd>
                         </div>
                         <div>
                             <dt class="text-sm text-zinc-500 dark:text-zinc-400">Agent</dt>

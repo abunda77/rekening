@@ -14,13 +14,32 @@ class AccountStock extends Model
     use HasFactory, HasUuids;
 
     /**
+     * Owner type of the stock account: personal or PT.
+     */
+    public const TYPE_PERSONAL = 'personal';
+
+    public const TYPE_PT = 'pt';
+
+    /**
+     * Available owner types keyed by stored value.
+     *
+     * @var array<string, string>
+     */
+    public const TYPES = [
+        self::TYPE_PERSONAL => 'Personal',
+        self::TYPE_PT => 'PT',
+    ];
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
     protected $fillable = [
         'account_number',
+        'customer_name',
         'bank_name',
+        'account_type',
         'agent_id',
         'is_in_stock',
         'user',
@@ -35,6 +54,7 @@ class AccountStock extends Model
      * @var array<string, mixed>
      */
     protected $attributes = [
+        'account_type' => self::TYPE_PERSONAL,
         'is_in_stock' => true,
         'is_vip' => false,
     ];
@@ -50,6 +70,14 @@ class AccountStock extends Model
             'is_in_stock' => 'boolean',
             'is_vip' => 'boolean',
         ];
+    }
+
+    /**
+     * Human readable label of the owner type.
+     */
+    public function typeLabel(): string
+    {
+        return self::TYPES[$this->account_type] ?? '-';
     }
 
     /**

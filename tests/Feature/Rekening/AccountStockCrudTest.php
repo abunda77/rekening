@@ -35,7 +35,9 @@ it('creates an account stock', function () {
         ->test(AccountStockCrud::class)
         ->call('openModal')
         ->set('account_number', '1234567890')
+        ->set('customer_name', 'PT Sentosa Jaya')
         ->set('bank_name', 'BCA')
+        ->set('account_type', AccountStock::TYPE_PT)
         ->set('agent_id', $agent->id)
         ->set('userName', 'agent-satu')
         ->set('is_in_stock', true)
@@ -46,6 +48,8 @@ it('creates an account stock', function () {
     $stock = AccountStock::query()->where('account_number', '1234567890')->firstOrFail();
 
     expect($stock->bank_name)->toBe('BCA')
+        ->and($stock->customer_name)->toBe('PT Sentosa Jaya')
+        ->and($stock->account_type)->toBe(AccountStock::TYPE_PT)
         ->and($stock->agent->is($agent))->toBeTrue()
         ->and($stock->user)->toBe('agent-satu')
         ->and($stock->is_in_stock)->toBeTrue()
@@ -137,13 +141,81 @@ it('filters account stocks by in stock flag', function () {
         ->assertDontSee('222');
 });
 
+it('defaults the account type to personal and reloads it when editing', function () {
+    Livewire::actingAs($this->user)
+        ->test(AccountStockCrud::class)
+        ->call('openModal')
+        ->assertSet('account_type', AccountStock::TYPE_PERSONAL)
+        ->set('account_number', '666777888')
+        ->set('bank_name', 'BTN')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $stock = AccountStock::query()->where('account_number', '666777888')->firstOrFail();
+
+    expect($stock->account_type)->toBe(AccountStock::TYPE_PERSONAL);
+
+    $stock->update(['account_type' => AccountStock::TYPE_PT]);
+
+    Livewire::actingAs($this->user)
+        ->test(AccountStockCrud::class)
+        ->call('openModal', $stock->id)
+        ->assertSet('account_type', AccountStock::TYPE_PT);
+});
+
+it('rejects an unknown account type', function () {
+    Livewire::actingAs($this->user)
+        ->test(AccountStockCrud::class)
+        ->call('openModal')
+        ->set('account_number', '999888777')
+        ->set('bank_name', 'BCA')
+        ->set('account_type', 'lainnya')
+        ->call('save')
+        ->assertHasErrors(['account_type']);
+});
+
+it('filters account stocks by account type', function () {
+    AccountStock::factory()->create(['account_number' => '3111', 'account_type' => AccountStock::TYPE_PERSONAL]);
+    AccountStock::factory()->create(['account_number' => '3222', 'account_type' => AccountStock::TYPE_PT]);
+
+    Livewire::actingAs($this->user)
+        ->test(AccountStockCrud::class)
+        ->set('filterType', AccountStock::TYPE_PT)
+        ->assertSee('3222')
+        ->assertDontSee('3111');
+});
+
+it('shows the customer name column and the swapped user/agent headers', function () {
+    AccountStock::factory()->create([
+        'account_number' => '4321',
+        'customer_name' => 'Budi Santoso',
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test(AccountStockCrud::class)
+        ->assertSeeInOrder(['Tipe', 'User', 'In Stock', 'Agent'])
+        ->assertSee('Nama Nasabah/PT')
+        ->assertSee('Budi Santoso');
+});
+
+it('searches account stocks by note keyword', function () {
+    AccountStock::factory()->create(['account_number' => '5111', 'note' => 'rekening cadangan agen baru']);
+    AccountStock::factory()->create(['account_number' => '5222', 'note' => 'rekening utama']);
+
+    Livewire::actingAs($this->user)
+        ->test(AccountStockCrud::class)
+        ->set('search', 'cadangan')
+        ->assertSee('5111')
+        ->assertDontSee('5222');
+});
+
 it('bulk imports account stock data from a csv file', function () {
     $agent = Agent::factory()->create(['agent_code' => 'ABCDE', 'agent_name' => 'Agent Kode']);
 
     $csv = <<<'CSV'
-No. Rek,Bank,Agent,In Stock,User,VIP
-9012345678,BCA,ABCDE,Yes,user-satu,Yes
-9012345679,BRI,Agent Kode,No,user-dua,No
+No. Rek,Nama Nasabah,Bank,Tipe,Agent,In Stock,User,VIP
+9012345678,PT Sentosa Jaya,BCA,PT,ABCDE,Yes,user-satu,Yes
+9012345679,Budi Santoso,BRI,Personal,Agent Kode,No,user-dua,No
 CSV;
 
     Livewire::actingAs($this->user)
@@ -157,11 +229,15 @@ CSV;
     $second = AccountStock::query()->where('account_number', '9012345679')->firstOrFail();
 
     expect($first->bank_name)->toBe('BCA')
+        ->and($first->customer_name)->toBe('PT Sentosa Jaya')
+        ->and($first->account_type)->toBe(AccountStock::TYPE_PT)
         ->and($first->agent->is($agent))->toBeTrue()
         ->and($first->is_in_stock)->toBeTrue()
         ->and($first->user)->toBe('user-satu')
         ->and($first->is_vip)->toBeTrue()
         ->and($second->bank_name)->toBe('BRI')
+        ->and($second->customer_name)->toBe('Budi Santoso')
+        ->and($second->account_type)->toBe(AccountStock::TYPE_PERSONAL)
         ->and($second->agent->is($agent))->toBeTrue()
         ->and($second->is_in_stock)->toBeFalse()
         ->and($second->is_vip)->toBeFalse();

@@ -6,6 +6,7 @@ use App\Imports\AccountStocksImport;
 use App\Models\AccountStock;
 use App\Models\Agent;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -25,6 +26,8 @@ class AccountStockCrud extends Component
 
     public string $filterVip = '';
 
+    public string $filterType = '';
+
     public string $sortField = 'created_at';
 
     public string $sortDirection = 'desc';
@@ -36,7 +39,11 @@ class AccountStockCrud extends Component
 
     public string $account_number = '';
 
+    public string $customer_name = '';
+
     public string $bank_name = '';
+
+    public string $account_type = AccountStock::TYPE_PERSONAL;
 
     public string $agent_id = '';
 
@@ -106,7 +113,9 @@ class AccountStockCrud extends Component
     {
         return [
             'account_number' => 'required|string|max:50|unique:account_stocks,account_number,'.$this->editId,
+            'customer_name' => 'nullable|string|max:255',
             'bank_name' => 'required|string|max:100',
+            'account_type' => ['required', 'string', Rule::in(array_keys(AccountStock::TYPES))],
             'agent_id' => 'nullable|exists:agents,id',
             'userName' => 'nullable|string|max:255',
             'note' => 'nullable|string|max:1000',
@@ -131,9 +140,14 @@ class AccountStockCrud extends Component
         $this->resetPage();
     }
 
+    public function updatedFilterType(): void
+    {
+        $this->resetPage();
+    }
+
     public function sortBy(string $field): void
     {
-        $allowedFields = ['account_number', 'bank_name', 'is_in_stock', 'user', 'is_vip', 'created_at'];
+        $allowedFields = ['account_number', 'bank_name', 'account_type', 'is_in_stock', 'user', 'is_vip', 'created_at'];
 
         abort_unless(in_array($field, $allowedFields, true), 400);
 
@@ -154,7 +168,9 @@ class AccountStockCrud extends Component
         if ($id) {
             $stock = AccountStock::findOrFail($id);
             $this->account_number = $stock->account_number;
+            $this->customer_name = $stock->customer_name ?? '';
             $this->bank_name = $stock->bank_name;
+            $this->account_type = $stock->account_type ?? AccountStock::TYPE_PERSONAL;
             $this->agent_id = $stock->agent_id ?? '';
             $this->userName = $stock->user ?? '';
             $this->note = $stock->note ?? '';
@@ -179,7 +195,9 @@ class AccountStockCrud extends Component
 
         $data = [
             'account_number' => $this->account_number,
+            'customer_name' => $this->customer_name ?: null,
             'bank_name' => $this->bank_name,
+            'account_type' => $this->account_type,
             'agent_id' => $this->agent_id ?: null,
             'user' => $this->userName ?: null,
             'note' => $this->note ?: null,
@@ -362,19 +380,24 @@ class AccountStockCrud extends Component
             ->when($this->search, function (Builder $query): void {
                 $query->where(function (Builder $query): void {
                     $query->where('account_number', 'like', '%'.$this->search.'%')
+                        ->orWhere('customer_name', 'like', '%'.$this->search.'%')
                         ->orWhere('bank_name', 'like', '%'.$this->search.'%')
+                        ->orWhere('account_type', 'like', '%'.$this->search.'%')
                         ->orWhere('user', 'like', '%'.$this->search.'%')
+                        ->orWhere('note', 'like', '%'.$this->search.'%')
                         ->orWhereHas('agent', fn (Builder $agent) => $agent->where('agent_name', 'like', '%'.$this->search.'%'));
                 });
             })
             ->when($this->filterInStock !== '', fn (Builder $query) => $query->where('is_in_stock', $this->filterInStock === 'yes'))
             ->when($this->filterVip !== '', fn (Builder $query) => $query->where('is_vip', $this->filterVip === 'yes'))
+            ->when($this->filterType !== '', fn (Builder $query) => $query->where('account_type', $this->filterType))
             ->orderBy($this->sortField, $this->sortDirection);
     }
 
     private function resetForm(): void
     {
-        $this->reset(['account_number', 'bank_name', 'agent_id', 'userName', 'note', 'image']);
+        $this->reset(['account_number', 'customer_name', 'bank_name', 'agent_id', 'userName', 'note', 'image']);
+        $this->account_type = AccountStock::TYPE_PERSONAL;
         $this->is_in_stock = true;
         $this->is_vip = false;
     }
