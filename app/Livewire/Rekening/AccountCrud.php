@@ -8,6 +8,7 @@ use App\Models\Agent;
 use App\Models\AgentSupplier;
 use App\Models\Customer;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -30,6 +31,10 @@ class AccountCrud extends Component
     public int $perPage = 10;
 
     public string $filterStatus = '';
+
+    public string $filterAgent = '';
+
+    public string $filterAgentSupplier = '';
 
     // Form fields
     public ?string $editId = null;
@@ -134,6 +139,16 @@ class AccountCrud extends Component
     }
 
     public function updatedFilterStatus(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedFilterAgent(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedFilterAgentSupplier(): void
     {
         $this->resetPage();
     }
@@ -306,7 +321,25 @@ class AccountCrud extends Component
             ->when($this->filterStatus, function ($query) {
                 $query->where('status', $this->filterStatus);
             })
-            ->orderBy($this->sortField, $this->sortDirection);
+            ->when($this->filterAgent, function ($query) {
+                $query->where('agent_id', $this->filterAgent);
+            })
+            ->when($this->filterAgentSupplier, function ($query) {
+                $query->where('agent_supplier_id', $this->filterAgentSupplier);
+            })
+            ->orderBy($this->sortColumn(), $this->sortDirection);
+    }
+
+    /**
+     * Resolve the column used for sorting, including related User and Agent Supplier columns.
+     */
+    private function sortColumn(): string|Builder
+    {
+        return match ($this->sortField) {
+            'agent_name' => Agent::query()->select('agent_name')->whereColumn('agents.id', 'accounts.agent_id'),
+            'agent_supplier_name' => AgentSupplier::query()->select('name')->whereColumn('agent_suppliers.id', 'accounts.agent_supplier_id'),
+            default => $this->sortField,
+        };
     }
 
     public function updatedSelectAll($value): void

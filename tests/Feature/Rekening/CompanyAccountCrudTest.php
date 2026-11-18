@@ -158,6 +158,65 @@ it('does not search company account mobile banking with a numeric keyword', func
         ->assertDontSee('8888000022');
 });
 
+it('can filter company accounts by user and agent supplier', function () {
+    $agent = Agent::factory()->create();
+    $otherAgent = Agent::factory()->create();
+    $supplier = AgentSupplier::factory()->create();
+    $otherSupplier = AgentSupplier::factory()->create();
+
+    CompanyAccount::factory()->create([
+        'company_name' => 'PT Filter Satu',
+        'account_number' => '5050505050',
+        'agent_id' => $agent->id,
+        'agent_supplier_id' => $supplier->id,
+    ]);
+    CompanyAccount::factory()->create([
+        'company_name' => 'PT Filter Dua',
+        'account_number' => '6060606060',
+        'agent_id' => $otherAgent->id,
+        'agent_supplier_id' => $otherSupplier->id,
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test(CompanyAccountCrud::class)
+        ->set('filterAgent', $agent->id)
+        ->assertSee('5050505050')
+        ->assertDontSee('6060606060')
+        ->set('filterAgent', '')
+        ->set('filterAgentSupplier', $supplier->id)
+        ->assertSee('5050505050')
+        ->assertDontSee('6060606060');
+});
+
+it('can sort company accounts by user and agent supplier name', function () {
+    $agentA = Agent::factory()->create(['agent_name' => 'Aaa User']);
+    $agentZ = Agent::factory()->create(['agent_name' => 'Zzz User']);
+    $supplierA = AgentSupplier::factory()->create(['name' => 'Aaa Supplier']);
+    $supplierZ = AgentSupplier::factory()->create(['name' => 'Zzz Supplier']);
+
+    CompanyAccount::factory()->create([
+        'company_name' => 'PT Sortir Satu',
+        'account_number' => '7070707070',
+        'agent_id' => $agentA->id,
+        'agent_supplier_id' => $supplierZ->id,
+    ]);
+    CompanyAccount::factory()->create([
+        'company_name' => 'PT Sortir Dua',
+        'account_number' => '8080808080',
+        'agent_id' => $agentZ->id,
+        'agent_supplier_id' => $supplierA->id,
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test(CompanyAccountCrud::class)
+        ->call('sortBy', 'agent_name')
+        ->assertSet('sortField', 'agent_name')
+        ->assertSeeInOrder(['7070707070', '8080808080'])
+        ->call('sortBy', 'agent_supplier_name')
+        ->assertSet('sortField', 'agent_supplier_name')
+        ->assertSeeInOrder(['8080808080', '7070707070']);
+});
+
 it('can search company accounts by note', function () {
     CompanyAccount::factory()->create([
         'company_name' => 'PT Sumber Rejeki',

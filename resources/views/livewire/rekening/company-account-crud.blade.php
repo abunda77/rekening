@@ -20,6 +20,18 @@
                         <option value="bermasalah">Bermasalah</option>
                         <option value="nonaktif">Non-Aktif</option>
                     </flux:select>
+                    <flux:select wire:model.live="filterAgent" class="sm:w-44">
+                        <option value="">Semua User</option>
+                        @foreach ($agents as $agent)
+                            <option value="{{ $agent->id }}">{{ $agent->agent_name }}</option>
+                        @endforeach
+                    </flux:select>
+                    <flux:select wire:model.live="filterAgentSupplier" class="sm:w-44">
+                        <option value="">Semua Agent Supplier</option>
+                        @foreach ($agentSuppliers as $supplier)
+                            <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
+                        @endforeach
+                    </flux:select>
                 </div>
                 <flux:button wire:click="openModal" variant="primary" icon="plus">Tambah Rekening PT</flux:button>
             </div>
@@ -34,8 +46,16 @@
                             <th class="cursor-pointer px-4 py-3 font-semibold" wire:click="sortBy('account_number')">No. Rekening</th>
                             <th class="cursor-pointer px-4 py-3 font-semibold" wire:click="sortBy('bank_name')">Bank</th>
                             <th class="px-4 py-3 font-semibold">Nasabah</th>
-                            <th class="px-4 py-3 font-semibold">User</th>
-                            <th class="px-4 py-3 font-semibold">Agent Supplier</th>
+                            <th class="cursor-pointer px-4 py-3 font-semibold" wire:click="sortBy('agent_name')">User
+                                @if ($sortField === 'agent_name')
+                                    <span class="ml-1">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                                @endif
+                            </th>
+                            <th class="cursor-pointer px-4 py-3 font-semibold" wire:click="sortBy('agent_supplier_name')">Agent Supplier
+                                @if ($sortField === 'agent_supplier_name')
+                                    <span class="ml-1">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                                @endif
+                            </th>
                             <th class="cursor-pointer px-4 py-3 font-semibold" wire:click="sortBy('opening_date')">Tanggal Buka</th>
                             <th class="cursor-pointer px-4 py-3 font-semibold" wire:click="sortBy('expired_on')">Tanggal Berakhir</th>
                             <th class="cursor-pointer px-4 py-3 font-semibold" wire:click="sortBy('status')">Status</th>

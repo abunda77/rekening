@@ -129,6 +129,64 @@ it('does not search mobile banking with a numeric keyword', function () {
         ->assertDontSee('3434343434');
 });
 
+it('can filter accounts by user and agent supplier', function () {
+    $otherAgent = Agent::factory()->create();
+    $supplier = AgentSupplier::factory()->create();
+    $otherSupplier = AgentSupplier::factory()->create();
+
+    Account::factory()->create([
+        'account_number' => '1010101010',
+        'customer_id' => $this->customer->id,
+        'agent_id' => $this->agent->id,
+        'agent_supplier_id' => $supplier->id,
+    ]);
+    Account::factory()->create([
+        'account_number' => '2020202020',
+        'customer_id' => $this->customer->id,
+        'agent_id' => $otherAgent->id,
+        'agent_supplier_id' => $otherSupplier->id,
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test(AccountCrud::class)
+        ->set('filterAgent', $this->agent->id)
+        ->assertSee('1010101010')
+        ->assertDontSee('2020202020')
+        ->set('filterAgent', '')
+        ->set('filterAgentSupplier', $supplier->id)
+        ->assertSee('1010101010')
+        ->assertDontSee('2020202020');
+});
+
+it('can sort accounts by user and agent supplier name', function () {
+    $agentA = Agent::factory()->create(['agent_name' => 'Aaa User']);
+    $agentZ = Agent::factory()->create(['agent_name' => 'Zzz User']);
+    $supplierA = AgentSupplier::factory()->create(['name' => 'Aaa Supplier']);
+    $supplierZ = AgentSupplier::factory()->create(['name' => 'Zzz Supplier']);
+
+    Account::factory()->create([
+        'account_number' => '3131313131',
+        'customer_id' => $this->customer->id,
+        'agent_id' => $agentA->id,
+        'agent_supplier_id' => $supplierZ->id,
+    ]);
+    Account::factory()->create([
+        'account_number' => '4141414141',
+        'customer_id' => $this->customer->id,
+        'agent_id' => $agentZ->id,
+        'agent_supplier_id' => $supplierA->id,
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test(AccountCrud::class)
+        ->call('sortBy', 'agent_name')
+        ->assertSet('sortField', 'agent_name')
+        ->assertSeeInOrder(['3131313131', '4141414141'])
+        ->call('sortBy', 'agent_supplier_name')
+        ->assertSet('sortField', 'agent_supplier_name')
+        ->assertSeeInOrder(['4141414141', '3131313131']);
+});
+
 it('can search accounts by note', function () {
     Account::factory()->create([
         'account_number' => '3333444455',

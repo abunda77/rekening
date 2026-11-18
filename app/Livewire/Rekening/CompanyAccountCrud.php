@@ -23,6 +23,10 @@ class CompanyAccountCrud extends Component
 
     public string $filterStatus = '';
 
+    public string $filterAgent = '';
+
+    public string $filterAgentSupplier = '';
+
     public string $sortField = 'created_at';
 
     public string $sortDirection = 'desc';
@@ -123,9 +127,19 @@ class CompanyAccountCrud extends Component
         $this->resetPage();
     }
 
+    public function updatedFilterAgent(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedFilterAgentSupplier(): void
+    {
+        $this->resetPage();
+    }
+
     public function sortBy(string $field): void
     {
-        $allowedFields = ['company_name', 'account_number', 'bank_name', 'status', 'opening_date', 'expired_on', 'created_at'];
+        $allowedFields = ['company_name', 'account_number', 'bank_name', 'status', 'opening_date', 'expired_on', 'created_at', 'agent_name', 'agent_supplier_name'];
 
         abort_unless(in_array($field, $allowedFields, true), 400);
 
@@ -287,7 +301,21 @@ class CompanyAccountCrud extends Component
                 });
             })
             ->when($this->filterStatus, fn (Builder $query) => $query->where('status', $this->filterStatus))
-            ->orderBy($this->sortField, $this->sortDirection);
+            ->when($this->filterAgent, fn (Builder $query) => $query->where('agent_id', $this->filterAgent))
+            ->when($this->filterAgentSupplier, fn (Builder $query) => $query->where('agent_supplier_id', $this->filterAgentSupplier))
+            ->orderBy($this->sortColumn(), $this->sortDirection);
+    }
+
+    /**
+     * Resolve the column used for sorting, including related User and Agent Supplier columns.
+     */
+    private function sortColumn(): string|Builder
+    {
+        return match ($this->sortField) {
+            'agent_name' => Agent::query()->select('agent_name')->whereColumn('agents.id', 'company_accounts.agent_id'),
+            'agent_supplier_name' => AgentSupplier::query()->select('name')->whereColumn('agent_suppliers.id', 'company_accounts.agent_supplier_id'),
+            default => $this->sortField,
+        };
     }
 
     private function resetForm(): void
