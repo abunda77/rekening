@@ -23,6 +23,7 @@ class AccountFactory extends Factory
         return [
             'customer_id' => Customer::factory(),
             'agent_id' => Agent::factory(),
+            'agent_supplier_id' => null,
             'bank_name' => fake()->randomElement($banks),
             'branch' => fake()->city(),
             'account_number' => fake()->unique()->numerify('#############'),

@@ -3,6 +3,7 @@
 use App\Livewire\Rekening\AccountCrud;
 use App\Models\Account;
 use App\Models\Agent;
+use App\Models\AgentSupplier;
 use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -61,6 +62,71 @@ it('can create a new account', function () {
         'account_number' => '9999888877',
         'bank_name' => 'BRI',
     ]);
+});
+
+it('can search accounts by agent supplier name and contact number', function () {
+    $supplier = AgentSupplier::factory()->create([
+        'name' => 'CV Anugerah Rejeki',
+        'contact_number' => '081277665544',
+    ]);
+
+    Account::factory()->create([
+        'account_number' => '4444555566',
+        'customer_id' => $this->customer->id,
+        'agent_supplier_id' => $supplier->id,
+    ]);
+    Account::factory()->create([
+        'account_number' => '7777888899',
+        'customer_id' => $this->customer->id,
+        'agent_supplier_id' => null,
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test(AccountCrud::class)
+        ->set('search', 'Anugerah')
+        ->assertSee('4444555566')
+        ->assertDontSee('7777888899')
+        ->set('search', '081277665544')
+        ->assertSee('4444555566')
+        ->assertDontSee('7777888899');
+});
+
+it('can search accounts by mobile banking keyword', function () {
+    Account::factory()->create([
+        'account_number' => '1212121212',
+        'customer_id' => $this->customer->id,
+        'mobile_banking' => "User : nasabah_bca\nPassword : rahasia123\nPIN : 654321",
+    ]);
+    Account::factory()->create([
+        'account_number' => '3434343434',
+        'customer_id' => $this->customer->id,
+        'mobile_banking' => "User : nasabah_mandiri\nPIN : 123456",
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test(AccountCrud::class)
+        ->set('search', 'nasabah_bca')
+        ->assertSee('1212121212')
+        ->assertDontSee('3434343434');
+});
+
+it('does not search mobile banking with a numeric keyword', function () {
+    Account::factory()->create([
+        'account_number' => '1212121212',
+        'customer_id' => $this->customer->id,
+        'mobile_banking' => "User : nasabah_bca\nPassword : rahasia123\nPIN : 654321",
+    ]);
+    Account::factory()->create([
+        'account_number' => '3434343434',
+        'customer_id' => $this->customer->id,
+        'mobile_banking' => "User : nasabah_mandiri\nPIN : 123456",
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test(AccountCrud::class)
+        ->set('search', '654321')
+        ->assertDontSee('1212121212')
+        ->assertDontSee('3434343434');
 });
 
 it('can search accounts by note', function () {

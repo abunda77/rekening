@@ -20,6 +20,7 @@ class CompanyAccountFactory extends Factory
         return [
             'customer_id' => null,
             'agent_id' => null,
+            'agent_supplier_id' => null,
             'company_name' => fake()->company(),
             'bank_name' => fake()->randomElement(['MANDIRI', 'BCA', 'BRI', 'BNI', 'CIMB']),
             'branch' => fake()->city(),

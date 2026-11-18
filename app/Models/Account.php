@@ -21,6 +21,7 @@ class Account extends Model
     protected $fillable = [
         'customer_id',
         'agent_id',
+        'agent_supplier_id',
         'bank_name',
         'branch',
         'account_number',
@@ -65,6 +66,16 @@ class Account extends Model
     public function agent(): BelongsTo
     {
         return $this->belongsTo(Agent::class);
+    }
+
+    /**
+     * Get the agent supplier that provided this account.
+     *
+     * @return BelongsTo<AgentSupplier, $this>
+     */
+    public function agentSupplier(): BelongsTo
+    {
+        return $this->belongsTo(AgentSupplier::class);
     }
 
     /**

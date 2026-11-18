@@ -16,6 +16,7 @@ class CompanyAccount extends Model
     protected $fillable = [
         'customer_id',
         'agent_id',
+        'agent_supplier_id',
         'company_name',
         'bank_name',
         'branch',
@@ -50,5 +51,11 @@ class CompanyAccount extends Model
     public function agent(): BelongsTo
     {
         return $this->belongsTo(Agent::class);
+    }
+
+    /** @return BelongsTo<AgentSupplier, $this> */
+    public function agentSupplier(): BelongsTo
+    {
+        return $this->belongsTo(AgentSupplier::class);
     }
 }

@@ -12,7 +12,7 @@
         <div class="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex flex-col gap-2 sm:flex-row">
-                    <flux:input wire:model.live.debounce.300ms="search" placeholder="Cari PT, rekening, bank, nasabah, catatan..."
+                    <flux:input wire:model.live.debounce.300ms="search" placeholder="Cari PT, rekening, bank, nasabah, agent supplier, mobile banking, catatan..."
                         icon="magnifying-glass" class="sm:w-80" />
                     <flux:select wire:model.live="filterStatus" class="sm:w-40">
                         <option value="">Semua Status</option>
@@ -35,6 +35,7 @@
                             <th class="cursor-pointer px-4 py-3 font-semibold" wire:click="sortBy('bank_name')">Bank</th>
                             <th class="px-4 py-3 font-semibold">Nasabah</th>
                             <th class="px-4 py-3 font-semibold">User</th>
+                            <th class="px-4 py-3 font-semibold">Agent Supplier</th>
                             <th class="cursor-pointer px-4 py-3 font-semibold" wire:click="sortBy('opening_date')">Tanggal Buka</th>
                             <th class="cursor-pointer px-4 py-3 font-semibold" wire:click="sortBy('expired_on')">Tanggal Berakhir</th>
                             <th class="cursor-pointer px-4 py-3 font-semibold" wire:click="sortBy('status')">Status</th>
@@ -54,6 +55,12 @@
                                 </td>
                                 <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400">{{ $account->customer?->full_name ?? '-' }}</td>
                                 <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400">{{ $account->agent?->agent_name ?? '-' }}</td>
+                                <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400">
+                                    {{ $account->agentSupplier?->name ?? '-' }}
+                                    @if ($account->agentSupplier?->contact_number)
+                                        <span class="block text-xs text-zinc-500">{{ $account->agentSupplier->contact_number }}</span>
+                                    @endif
+                                </td>
                                 <td class="whitespace-nowrap px-4 py-3 text-zinc-600 dark:text-zinc-400">{{ $account->opening_date?->format('d M Y') ?? '-' }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 text-zinc-600 dark:text-zinc-400">{{ $account->expired_on?->format('d M Y') ?? '-' }}</td>
                                 <td class="px-4 py-3">
@@ -76,7 +83,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">Belum ada data rekening PT.</td>
+                                <td colspan="10" class="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">Belum ada data rekening PT.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -118,6 +125,47 @@
                             </flux:select>
                             <flux:error name="agent_id" />
                         </flux:field>
+                        <flux:field>
+                            <flux:label>Agent Supplier</flux:label>
+                            <div class="flex items-start gap-2">
+                                <flux:select wire:model="agent_supplier_id" class="flex-1">
+                                    <option value="">Tanpa agent supplier</option>
+                                    @foreach ($agentSuppliers as $supplier)
+                                        <option value="{{ $supplier->id }}">
+                                            {{ $supplier->name }}{{ $supplier->contact_number ? ' ('.$supplier->contact_number.')' : '' }}
+                                        </option>
+                                    @endforeach
+                                </flux:select>
+                                <flux:button type="button" wire:click="$toggle('showNewSupplierForm')" size="sm"
+                                    variant="ghost" icon="plus" title="Tambah agent supplier baru" />
+                            </div>
+                            <flux:error name="agent_supplier_id" />
+                        </flux:field>
+                        @if ($showNewSupplierForm)
+                            <div class="rounded-lg border border-dashed border-zinc-300 p-4 dark:border-zinc-600 md:col-span-2">
+                                <flux:text class="mb-3 text-sm font-medium">Agent supplier baru</flux:text>
+                                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    <flux:field>
+                                        <flux:label>Nama Agent Supplier</flux:label>
+                                        <flux:input wire:model="new_supplier_name" placeholder="Nama agent supplier" />
+                                        <flux:error name="new_supplier_name" />
+                                    </flux:field>
+                                    <flux:field>
+                                        <flux:label>No. Kontak</flux:label>
+                                        <flux:input wire:model="new_supplier_contact" placeholder="08xxxxxxxxxx" />
+                                        <flux:error name="new_supplier_contact" />
+                                    </flux:field>
+                                </div>
+                                <div class="mt-3 flex justify-end gap-2">
+                                    <flux:button type="button" size="sm" variant="ghost"
+                                        wire:click="$set('showNewSupplierForm', false)">Batal</flux:button>
+                                    <flux:button type="button" size="sm" variant="primary" wire:click="saveNewSupplier"
+                                        wire:loading.attr="disabled" wire:target="saveNewSupplier">
+                                        Simpan Agent Supplier
+                                    </flux:button>
+                                </div>
+                            </div>
+                        @endif
                         <flux:field>
                             <flux:label>Nama Bank</flux:label>
                             <flux:select wire:model="bank_name">
@@ -194,6 +242,7 @@
                         <div><dt class="text-sm text-zinc-500">Status</dt><dd>{{ ucfirst($viewingAccount->status) }}</dd></div>
                         <div><dt class="text-sm text-zinc-500">Nasabah</dt><dd>{{ $viewingAccount->customer?->full_name ?? '-' }}</dd></div>
                         <div><dt class="text-sm text-zinc-500">User</dt><dd>{{ $viewingAccount->agent?->agent_name ?? '-' }}</dd></div>
+                        <div><dt class="text-sm text-zinc-500">Agent Supplier</dt><dd>{{ $viewingAccount->agentSupplier?->name ?? '-' }}{{ $viewingAccount->agentSupplier?->contact_number ? ' ('.$viewingAccount->agentSupplier->contact_number.')' : '' }}</dd></div>
                         <div><dt class="text-sm text-zinc-500">Tanggal Pembukaan</dt><dd>{{ $viewingAccount->opening_date?->format('d M Y') ?? '-' }}</dd></div>
                         <div><dt class="text-sm text-zinc-500">Tanggal Berakhir</dt><dd>{{ $viewingAccount->expired_on?->format('d M Y') ?? '-' }}</dd></div>
                         <div class="md:col-span-2"><dt class="text-sm text-zinc-500">Mobile Banking</dt><dd class="whitespace-pre-wrap">{{ $viewingAccount->mobile_banking ?? '-' }}</dd></div>

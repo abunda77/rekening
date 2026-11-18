@@ -132,6 +132,15 @@
                     </x-slot:icon>
                     <span class="nav-item-text">{{ __('User') }}</span>
                 </flux:sidebar.item>
+                <flux:sidebar.item :href="route('rekening.agent-suppliers')"
+                    :current="request()->routeIs('rekening.agent-suppliers')" wire:navigate>
+                    <x-slot:icon>
+                        <div class="sidebar-icon-wrapper {{ request()->routeIs('rekening.agent-suppliers') ? 'active' : '' }}">
+                            @include('flux::icon.users')
+                        </div>
+                    </x-slot:icon>
+                    <span class="nav-item-text">{{ __('Agent Supplier') }}</span>
+                </flux:sidebar.item>
                 <flux:sidebar.item :href="route('rekening.customers')"
                     :current="request()->routeIs('rekening.customers')" wire:navigate>
                     <x-slot:icon>

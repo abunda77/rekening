@@ -19,7 +19,7 @@
                 <div class="flex flex-wrap items-center gap-2">
                     <flux:input 
                         wire:model.live.debounce.300ms="search" 
-                        placeholder="Cari no. rekening, bank, nasabah, catatan..." 
+                        placeholder="Cari no. rekening, bank, nasabah, agent supplier, mobile banking, catatan..." 
                         icon="magnifying-glass"
                         class="w-72"
                     />
@@ -72,6 +72,7 @@
                             </th>
                             <th class="px-4 py-3 font-semibold">Nasabah</th>
                             <th class="px-4 py-3 font-semibold">User</th>
+                            <th class="px-4 py-3 font-semibold">Agent Supplier</th>
                             <th class="px-4 py-3 font-semibold cursor-pointer" wire:click="sortBy('status')">
                                 Status
                                 @if($sortField === 'status')
@@ -117,6 +118,12 @@
                                     <span class="text-xs text-zinc-500 block">{{ $account->customer?->nik }}</span>
                                 </td>
                                 <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400">{{ $account->agent?->agent_name ?? '-' }}</td>
+                                <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400">
+                                    {{ $account->agentSupplier?->name ?? '-' }}
+                                    @if($account->agentSupplier?->contact_number)
+                                        <span class="block text-xs text-zinc-500 dark:text-zinc-500">{{ $account->agentSupplier->contact_number }}</span>
+                                    @endif
+                                </td>
                                 <td class="px-4 py-3">
                                     @switch($account->status)
                                         @case('aktif')
@@ -153,7 +160,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" class="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">
+                                <td colspan="11" class="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">
                                     Tidak ada data rekening
                                 </td>
                             </tr>
@@ -196,6 +203,50 @@
                             </flux:select>
                             <flux:error name="agent_id" />
                         </flux:field>
+
+                        <flux:field>
+                            <flux:label>Agent Supplier</flux:label>
+                            <div class="flex items-start gap-2">
+                                <flux:select wire:model="agent_supplier_id" class="flex-1">
+                                    <option value="">Pilih agent supplier (opsional)...</option>
+                                    @foreach($agentSuppliers as $supplier)
+                                        <option value="{{ $supplier->id }}">
+                                            {{ $supplier->name }}{{ $supplier->contact_number ? ' ('.$supplier->contact_number.')' : '' }}
+                                        </option>
+                                    @endforeach
+                                </flux:select>
+                                <flux:button type="button" wire:click="$toggle('showNewSupplierForm')" size="sm"
+                                    variant="ghost" icon="plus" title="Tambah agent supplier baru" />
+                            </div>
+                            <flux:error name="agent_supplier_id" />
+                        </flux:field>
+
+                        @if($showNewSupplierForm)
+                            <div
+                                class="rounded-lg border border-dashed border-zinc-300 p-4 dark:border-zinc-600 md:col-span-2">
+                                <flux:text class="mb-3 text-sm font-medium">Agent supplier baru</flux:text>
+                                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    <flux:field>
+                                        <flux:label>Nama Agent Supplier</flux:label>
+                                        <flux:input wire:model="new_supplier_name" placeholder="Nama agent supplier" />
+                                        <flux:error name="new_supplier_name" />
+                                    </flux:field>
+                                    <flux:field>
+                                        <flux:label>No. Kontak</flux:label>
+                                        <flux:input wire:model="new_supplier_contact" placeholder="08xxxxxxxxxx" />
+                                        <flux:error name="new_supplier_contact" />
+                                    </flux:field>
+                                </div>
+                                <div class="mt-3 flex justify-end gap-2">
+                                    <flux:button type="button" size="sm" variant="ghost"
+                                        wire:click="$set('showNewSupplierForm', false)">Batal</flux:button>
+                                    <flux:button type="button" size="sm" variant="primary" wire:click="saveNewSupplier"
+                                        wire:loading.attr="disabled" wire:target="saveNewSupplier">
+                                        Simpan Agent Supplier
+                                    </flux:button>
+                                </div>
+                            </div>
+                        @endif
 
                         <flux:field>
                             <flux:label>Nama Bank</flux:label>
@@ -357,6 +408,14 @@
                             <p class="text-base text-zinc-900 dark:text-zinc-100">{{ $viewingAccount->agent?->agent_name ?? '-' }}</p>
                             @if($viewingAccount->agent)
                                 <p class="text-sm text-zinc-500 dark:text-zinc-400">Kode: {{ $viewingAccount->agent->agent_code }}</p>
+                            @endif
+                        </div>
+
+                        <div class="space-y-1">
+                            <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Agent Supplier</span>
+                            <p class="text-base text-zinc-900 dark:text-zinc-100">{{ $viewingAccount->agentSupplier?->name ?? '-' }}</p>
+                            @if($viewingAccount->agentSupplier?->contact_number)
+                                <p class="text-sm text-zinc-500 dark:text-zinc-400">Kontak: {{ $viewingAccount->agentSupplier->contact_number }}</p>
                             @endif
                         </div>
 

@@ -5,6 +5,7 @@ namespace App\Livewire\Rekening;
 use App\Exports\AccountsExport;
 use App\Models\Account;
 use App\Models\Agent;
+use App\Models\AgentSupplier;
 use App\Models\Customer;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Livewire\Attributes\Layout;
@@ -36,6 +37,15 @@ class AccountCrud extends Component
     public string $customer_id = '';
 
     public string $agent_id = '';
+
+    public string $agent_supplier_id = '';
+
+    // Inline agent supplier form
+    public bool $showNewSupplierForm = false;
+
+    public string $new_supplier_name = '';
+
+    public string $new_supplier_contact = '';
 
     public string $bank_name = '';
 
@@ -105,6 +115,7 @@ class AccountCrud extends Component
         return [
             'customer_id' => 'required|exists:customers,id',
             'agent_id' => 'nullable|exists:agents,id',
+            'agent_supplier_id' => 'nullable|exists:agent_suppliers,id',
             'bank_name' => 'required|string|max:100',
             'branch' => 'nullable|string|max:100',
             'account_number' => 'required|string|max:50|unique:accounts,account_number,'.$this->editId,
@@ -141,11 +152,13 @@ class AccountCrud extends Component
     {
         $this->resetValidation();
         $this->editId = $id;
+        $this->reset(['showNewSupplierForm', 'new_supplier_name', 'new_supplier_contact']);
 
         if ($id) {
             $account = Account::findOrFail($id);
             $this->customer_id = $account->customer_id;
             $this->agent_id = $account->agent_id ?? '';
+            $this->agent_supplier_id = $account->agent_supplier_id ?? '';
             $this->bank_name = $account->bank_name;
             $this->branch = $account->branch ?? '';
             $this->account_number = $account->account_number;
@@ -156,7 +169,7 @@ class AccountCrud extends Component
             $this->status = $account->status;
             $this->is_vip = $account->is_vip;
         } else {
-            $this->reset(['customer_id', 'agent_id', 'bank_name', 'branch', 'account_number', 'opening_date', 'expired_on', 'note', 'mobile_banking', 'cover_buku']);
+            $this->reset(['customer_id', 'agent_id', 'agent_supplier_id', 'bank_name', 'branch', 'account_number', 'opening_date', 'expired_on', 'note', 'mobile_banking', 'cover_buku']);
             $this->status = 'aktif';
             $this->is_vip = false;
         }
@@ -167,8 +180,35 @@ class AccountCrud extends Component
     public function closeModal(): void
     {
         $this->showModal = false;
-        $this->reset(['editId', 'customer_id', 'agent_id', 'bank_name', 'branch', 'account_number', 'opening_date', 'expired_on', 'note', 'mobile_banking', 'status', 'is_vip', 'cover_buku']);
+        $this->reset(['editId', 'customer_id', 'agent_id', 'agent_supplier_id', 'bank_name', 'branch', 'account_number', 'opening_date', 'expired_on', 'note', 'mobile_banking', 'status', 'is_vip', 'cover_buku']);
+        $this->reset(['showNewSupplierForm', 'new_supplier_name', 'new_supplier_contact']);
         $this->resetValidation();
+    }
+
+    public function saveNewSupplier(): void
+    {
+        $validated = $this->validate(
+            [
+                'new_supplier_name' => 'required|string|max:255|unique:agent_suppliers,name',
+                'new_supplier_contact' => 'nullable|string|max:30',
+            ],
+            [
+                'new_supplier_name.required' => 'Nama agent supplier wajib diisi.',
+                'new_supplier_name.unique' => 'Nama agent supplier sudah terdaftar.',
+                'new_supplier_contact.max' => 'No. kontak maksimal 30 karakter.',
+            ]
+        );
+
+        $supplier = AgentSupplier::create([
+            'name' => $validated['new_supplier_name'],
+            'contact_number' => $validated['new_supplier_contact'] ?: null,
+        ]);
+
+        $this->agent_supplier_id = $supplier->id;
+        $this->reset(['showNewSupplierForm', 'new_supplier_name', 'new_supplier_contact']);
+        $this->resetValidation();
+
+        session()->flash('success', 'Agent supplier berhasil ditambahkan.');
     }
 
     public function save(): void
@@ -178,6 +218,7 @@ class AccountCrud extends Component
         $data = [
             'customer_id' => $this->customer_id,
             'agent_id' => $this->agent_id ?: null,
+            'agent_supplier_id' => $this->agent_supplier_id ?: null,
             'bank_name' => $this->bank_name,
             'branch' => $this->branch ?: null,
             'account_number' => $this->account_number,
@@ -229,7 +270,7 @@ class AccountCrud extends Component
 
     public function view(string $id): void
     {
-        $this->viewingAccount = Account::with(['customer', 'agent'])->findOrFail($id);
+        $this->viewingAccount = Account::with(['customer', 'agent', 'agentSupplier'])->findOrFail($id);
         $this->showViewModal = true;
     }
 
@@ -242,15 +283,23 @@ class AccountCrud extends Component
     public function getRowsQuery()
     {
         return Account::query()
-            ->with(['customer', 'agent'])
+            ->with(['customer', 'agent', 'agentSupplier'])
             ->when($this->search, function ($query) {
                 $query->where(function ($query): void {
                     $query->where('account_number', 'like', '%'.$this->search.'%')
                         ->orWhere('bank_name', 'like', '%'.$this->search.'%')
                         ->orWhere('note', 'like', '%'.$this->search.'%')
+                        // Mobile banking hanya dicari dengan kata/frasa, bukan angka (PIN dan sejenisnya).
+                        ->when(preg_match('/\\p{L}/u', $this->search) === 1, function ($q): void {
+                            $q->orWhere('mobile_banking', 'like', '%'.$this->search.'%');
+                        })
                         ->orWhereHas('customer', function ($q) {
                             $q->where('full_name', 'like', '%'.$this->search.'%')
                                 ->orWhere('nik', 'like', '%'.$this->search.'%');
+                        })
+                        ->orWhereHas('agentSupplier', function ($q) {
+                            $q->where('name', 'like', '%'.$this->search.'%')
+                                ->orWhere('contact_number', 'like', '%'.$this->search.'%');
                         });
                 });
             })
@@ -332,6 +381,7 @@ class AccountCrud extends Component
             'accounts' => $accounts,
             'customers' => Customer::orderBy('full_name')->get(),
             'agents' => Agent::orderBy('agent_name')->get(),
+            'agentSuppliers' => AgentSupplier::orderBy('name')->get(),
         ]);
     }
 }

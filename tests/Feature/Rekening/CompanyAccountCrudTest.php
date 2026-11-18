@@ -2,6 +2,7 @@
 
 use App\Livewire\Rekening\CompanyAccountCrud;
 use App\Models\Agent;
+use App\Models\AgentSupplier;
 use App\Models\CompanyAccount;
 use App\Models\Customer;
 use App\Models\User;
@@ -90,6 +91,71 @@ it('can update and delete a company account', function () {
         ->call('delete');
 
     expect($account->fresh())->toBeNull();
+});
+
+it('can search company accounts by agent supplier name and contact number', function () {
+    $supplier = AgentSupplier::factory()->create([
+        'name' => 'PT Mitra Supplier',
+        'contact_number' => '081299887766',
+    ]);
+
+    CompanyAccount::factory()->create([
+        'company_name' => 'PT Sumber Dana',
+        'account_number' => '6666000011',
+        'agent_supplier_id' => $supplier->id,
+    ]);
+    CompanyAccount::factory()->create([
+        'company_name' => 'PT Tanpa Supplier',
+        'account_number' => '6666000022',
+        'agent_supplier_id' => null,
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test(CompanyAccountCrud::class)
+        ->set('search', 'Mitra Supplier')
+        ->assertSee('6666000011')
+        ->assertDontSee('6666000022')
+        ->set('search', '081299887766')
+        ->assertSee('6666000011')
+        ->assertDontSee('6666000022');
+});
+
+it('can search company accounts by mobile banking keyword', function () {
+    CompanyAccount::factory()->create([
+        'company_name' => 'PT Digital Nusantara',
+        'account_number' => '8888000011',
+        'mobile_banking' => "User : pt_nusantara\nPassword : rahasia123\nPIN : 654321",
+    ]);
+    CompanyAccount::factory()->create([
+        'company_name' => 'PT Karya Abadi',
+        'account_number' => '8888000022',
+        'mobile_banking' => "User : pt_abadi\nPIN : 123456",
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test(CompanyAccountCrud::class)
+        ->set('search', 'pt_nusantara')
+        ->assertSee('8888000011')
+        ->assertDontSee('8888000022');
+});
+
+it('does not search company account mobile banking with a numeric keyword', function () {
+    CompanyAccount::factory()->create([
+        'company_name' => 'PT Digital Nusantara',
+        'account_number' => '8888000011',
+        'mobile_banking' => "User : pt_nusantara\nPassword : rahasia123\nPIN : 654321",
+    ]);
+    CompanyAccount::factory()->create([
+        'company_name' => 'PT Karya Abadi',
+        'account_number' => '8888000022',
+        'mobile_banking' => "User : pt_abadi\nPIN : 123456",
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test(CompanyAccountCrud::class)
+        ->set('search', '654321')
+        ->assertDontSee('8888000011')
+        ->assertDontSee('8888000022');
 });
 
 it('can search company accounts by note', function () {

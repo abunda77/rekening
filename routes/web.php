@@ -9,6 +9,7 @@ use App\Livewire\Agent\Shipment;
 use App\Livewire\Rekening\AccountCrud;
 use App\Livewire\Rekening\AccountStockCrud;
 use App\Livewire\Rekening\AgentCrud;
+use App\Livewire\Rekening\AgentSupplierCrud;
 use App\Livewire\Rekening\CardCrud;
 use App\Livewire\Rekening\CompanyAccountCrud;
 use App\Livewire\Rekening\ComplaintCrud;
@@ -38,6 +39,7 @@ Route::get('dashboard/export/{type}', [DashboardController::class, 'exportPdf'])
 // Rekening Management Routes
 Route::middleware(['auth', 'verified'])->prefix('rekening')->group(function () {
     Route::get('/agents', AgentCrud::class)->name('rekening.agents');
+    Route::get('/agent-suppliers', AgentSupplierCrud::class)->name('rekening.agent-suppliers');
     Route::get('/customers', CustomerCrud::class)->name('rekening.customers');
     Route::get('/accounts', AccountCrud::class)->name('rekening.accounts');
     Route::get('/company-accounts', CompanyAccountCrud::class)->name('rekening.company-accounts');
