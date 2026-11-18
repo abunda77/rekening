@@ -2,6 +2,7 @@
 
 use App\Livewire\Rekening\ExpiredAccount;
 use App\Models\Account;
+use App\Models\AgentSupplier;
 use App\Models\CompanyAccount;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -122,6 +123,36 @@ it('searches by account number, customer name and company name', function () {
         ->set('search', 'Cahaya')
         ->assertViewHas('accounts', fn ($accounts) => $accounts->pluck('id')->contains($companyMatch->id)
             && ! $accounts->pluck('id')->contains($match->id));
+});
+
+it('shows the user and agent supplier columns and searches them', function () {
+    $supplier = AgentSupplier::factory()->create(['name' => 'Supplier Nusantara']);
+    $bank = Account::factory()->create([
+        'account_number' => '5151515151',
+        'agent_supplier_id' => $supplier->id,
+        'expired_on' => now()->startOfMonth(),
+    ]);
+    $company = CompanyAccount::factory()->create([
+        'company_name' => 'PT Supplier Nusantara',
+        'agent_supplier_id' => $supplier->id,
+        'expired_on' => now()->startOfMonth(),
+    ]);
+    $other = Account::factory()->create([
+        'account_number' => '6161616161',
+        'expired_on' => now()->startOfMonth(),
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test(ExpiredAccount::class)
+        ->assertSee('User')
+        ->assertSee('Agent Supplier')
+        ->assertSee('Supplier Nusantara')
+        ->set('search', 'Supplier Nusantara')
+        ->assertViewHas('accounts', fn ($accounts) => $accounts->pluck('id')->contains($bank->id)
+            && $accounts->pluck('id')->contains($company->id)
+            && ! $accounts->pluck('id')->contains($other->id))
+        ->call('sortBy', 'agent_supplier_name')
+        ->assertSet('sortField', 'agent_supplier_name');
 });
 
 it('filters rows by status', function () {

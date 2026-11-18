@@ -38,6 +38,7 @@ class ExpiredAccountQuery
         'bank_name' => 'bank_name',
         'customer_name' => 'customer_name',
         'agent_name' => 'agent_name',
+        'agent_supplier_name' => 'agent_supplier_name',
         'company_name' => 'company_name',
         'status' => 'status',
     ];
@@ -163,7 +164,8 @@ class ExpiredAccountQuery
                     $query->where($table.'.account_number', 'like', $term)
                         ->orWhere($table.'.bank_name', 'like', $term)
                         ->orWhere('customers.full_name', 'like', $term)
-                        ->orWhere('agents.agent_name', 'like', $term);
+                        ->orWhere('agents.agent_name', 'like', $term)
+                        ->orWhere('agent_suppliers.name', 'like', $term);
 
                     if ($table === 'company_accounts') {
                         $query->orWhere('company_accounts.company_name', 'like', $term);
@@ -177,6 +179,7 @@ class ExpiredAccountQuery
         return DB::table('accounts')
             ->leftJoin('customers', 'customers.id', '=', 'accounts.customer_id')
             ->leftJoin('agents', 'agents.id', '=', 'accounts.agent_id')
+            ->leftJoin('agent_suppliers', 'agent_suppliers.id', '=', 'accounts.agent_supplier_id')
             ->select([
                 DB::raw("'bank' as type"),
                 'accounts.id',
@@ -186,6 +189,7 @@ class ExpiredAccountQuery
                 'accounts.status',
                 'customers.full_name as customer_name',
                 'agents.agent_name as agent_name',
+                'agent_suppliers.name as agent_supplier_name',
                 DB::raw('null as company_name'),
             ]);
     }
@@ -195,6 +199,7 @@ class ExpiredAccountQuery
         return DB::table('company_accounts')
             ->leftJoin('customers', 'customers.id', '=', 'company_accounts.customer_id')
             ->leftJoin('agents', 'agents.id', '=', 'company_accounts.agent_id')
+            ->leftJoin('agent_suppliers', 'agent_suppliers.id', '=', 'company_accounts.agent_supplier_id')
             ->select([
                 DB::raw("'pt' as type"),
                 'company_accounts.id',
@@ -204,6 +209,7 @@ class ExpiredAccountQuery
                 'company_accounts.status',
                 'customers.full_name as customer_name',
                 'agents.agent_name as agent_name',
+                'agent_suppliers.name as agent_supplier_name',
                 'company_accounts.company_name',
             ]);
     }

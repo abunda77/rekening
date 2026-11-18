@@ -36,7 +36,7 @@
                 <div class="grid flex-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
                     <flux:input
                         wire:model.live.debounce.300ms="search"
-                        placeholder="Cari no. rekening, bank, nasabah, agent, PT..."
+                        placeholder="Cari no. rekening, bank, nasabah, user, agent supplier, PT..."
                         icon="magnifying-glass"
                     />
                     <flux:select wire:model.live="filterType">
@@ -73,7 +73,7 @@
         @php
             $showType = $filterType === '';
             $showCompany = $filterType !== 'bank';
-            $columnCount = 6 + ($showType ? 1 : 0) + ($showCompany ? 1 : 0);
+            $columnCount = 7 + ($showType ? 1 : 0) + ($showCompany ? 1 : 0);
             $sortIndicator = fn (string $field) => $sortField === $field ? ($sortDirection === 'asc' ? '↑' : '↓') : '';
             $sortableHeader = 'cursor-pointer px-4 py-3 font-semibold hover:bg-white/10';
         @endphp
@@ -91,7 +91,8 @@
                             @endif
                             <th class="{{ $sortableHeader }}" wire:click="sortBy('account_number')">No. Rekening {{ $sortIndicator('account_number') }}</th>
                             <th class="{{ $sortableHeader }}" wire:click="sortBy('customer_name')">Nasabah {{ $sortIndicator('customer_name') }}</th>
-                            <th class="{{ $sortableHeader }}" wire:click="sortBy('agent_name')">Agent {{ $sortIndicator('agent_name') }}</th>
+                            <th class="{{ $sortableHeader }}" wire:click="sortBy('agent_name')">User {{ $sortIndicator('agent_name') }}</th>
+                            <th class="{{ $sortableHeader }}" wire:click="sortBy('agent_supplier_name')">Agent Supplier {{ $sortIndicator('agent_supplier_name') }}</th>
                             <th class="{{ $sortableHeader }}" wire:click="sortBy('bank_name')">Bank {{ $sortIndicator('bank_name') }}</th>
                             <th class="{{ $sortableHeader }}" wire:click="sortBy('expired_on')">Tanggal Berakhir {{ $sortIndicator('expired_on') }}</th>
                             <th class="{{ $sortableHeader }}" wire:click="sortBy('status')">Status {{ $sortIndicator('status') }}</th>
@@ -115,6 +116,7 @@
                                 <td class="px-4 py-3 font-mono text-neutral-900 dark:text-white">{{ $account->account_number }}</td>
                                 <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400">{{ $account->customer_name ?? '-' }}</td>
                                 <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400">{{ $account->agent_name ?? '-' }}</td>
+                                <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400">{{ $account->agent_supplier_name ?? '-' }}</td>
                                 <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400">{{ $account->bank_name }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 text-zinc-600 dark:text-zinc-400">
                                     {{ $account->expired_on ? \Illuminate\Support\Carbon::parse($account->expired_on)->format('d M Y') : '-' }}

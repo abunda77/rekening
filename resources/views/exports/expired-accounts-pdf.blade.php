@@ -35,7 +35,8 @@
                 @endif
                 <th>No. Rekening</th>
                 <th>Nasabah</th>
-                <th>Agent</th>
+                <th>User</th>
+                <th>Agent Supplier</th>
                 <th>Bank</th>
                 <th>Expired On</th>
                 <th>Status</th>
@@ -53,13 +54,14 @@
                     <td>{{ $row->account_number }}</td>
                     <td>{{ $row->customer_name ?? '-' }}</td>
                     <td>{{ $row->agent_name ?? '-' }}</td>
+                    <td>{{ $row->agent_supplier_name ?? '-' }}</td>
                     <td>{{ $row->bank_name }}</td>
                     <td>{{ $row->expired_on ? \Illuminate\Support\Carbon::parse($row->expired_on)->format('d M Y') : '-' }}</td>
                     <td>{{ \App\Services\ExpiredAccountQuery::STATUSES[$row->status] ?? ucfirst((string) $row->status) }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="{{ 6 + ($showType ? 1 : 0) + ($showCompany ? 1 : 0) }}">Tidak ada rekening yang cocok dengan filter.</td>
+                    <td colspan="{{ 7 + ($showType ? 1 : 0) + ($showCompany ? 1 : 0) }}">Tidak ada rekening yang cocok dengan filter.</td>
                 </tr>
             @endforelse
         </tbody>
