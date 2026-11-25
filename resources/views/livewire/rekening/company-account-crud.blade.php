@@ -33,7 +33,11 @@
                         @endforeach
                     </flux:select>
                 </div>
-                <flux:button wire:click="openModal" variant="primary" icon="plus">Tambah Rekening PT</flux:button>
+                <div class="flex items-center gap-2">
+                    <flux:button href="{{ $exportXlsxUrl }}" variant="outline" icon="arrow-down-tray">XLSX</flux:button>
+                    <flux:button href="{{ $exportPdfUrl }}" variant="outline" icon="document-text">PDF</flux:button>
+                    <flux:button wire:click="openModal" variant="primary" icon="plus">Tambah Rekening PT</flux:button>
+                </div>
             </div>
         </div>
 

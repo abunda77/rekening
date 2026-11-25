@@ -4,6 +4,8 @@ use App\Http\Controllers\AccountPdfExportController;
 use App\Http\Controllers\AccountXlsxExportController;
 use App\Http\Controllers\CardPdfExportController;
 use App\Http\Controllers\CardXlsxExportController;
+use App\Http\Controllers\CompanyAccountPdfExportController;
+use App\Http\Controllers\CompanyAccountXlsxExportController;
 use App\Http\Controllers\CustomerPdfExportController;
 use App\Http\Controllers\CustomerXlsxExportController;
 use App\Http\Controllers\DashboardController;
@@ -53,6 +55,8 @@ Route::middleware(['auth', 'verified'])->prefix('rekening')->group(function () {
     Route::get('/accounts/export/pdf', AccountPdfExportController::class)->name('rekening.accounts.export.pdf');
     Route::get('/accounts/export/xlsx', AccountXlsxExportController::class)->name('rekening.accounts.export.xlsx');
     Route::get('/company-accounts', CompanyAccountCrud::class)->name('rekening.company-accounts');
+    Route::get('/company-accounts/export/pdf', CompanyAccountPdfExportController::class)->name('rekening.company-accounts.export.pdf');
+    Route::get('/company-accounts/export/xlsx', CompanyAccountXlsxExportController::class)->name('rekening.company-accounts.export.xlsx');
     Route::get('/expired-accounts', ExpiredAccount::class)->name('rekening.expired-accounts');
     Route::get('/expired-accounts/export', ExpiredAccountExportController::class)->name('rekening.expired-accounts.export');
     Route::get('/account-stocks', AccountStockCrud::class)->name('rekening.account-stocks');

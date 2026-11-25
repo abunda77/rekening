@@ -6,6 +6,7 @@ use App\Models\Agent;
 use App\Models\AgentSupplier;
 use App\Models\CompanyAccount;
 use App\Models\Customer;
+use App\Services\CompanyAccountListQuery;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -281,41 +282,30 @@ class CompanyAccountCrud extends Component
 
     private function rowsQuery(): Builder
     {
-        return CompanyAccount::query()
-            ->with(['customer', 'agent', 'agentSupplier'])
-            ->when($this->search, function (Builder $query): void {
-                $query->where(function (Builder $query): void {
-                    $query->where('company_name', 'like', '%'.$this->search.'%')
-                        ->orWhere('account_number', 'like', '%'.$this->search.'%')
-                        ->orWhere('bank_name', 'like', '%'.$this->search.'%')
-                        ->orWhere('note', 'like', '%'.$this->search.'%')
-                        // Mobile banking hanya dicari dengan kata/frasa, bukan angka (PIN dan sejenisnya).
-                        ->when(preg_match('/\\p{L}/u', $this->search) === 1, function (Builder $query): void {
-                            $query->orWhere('mobile_banking', 'like', '%'.$this->search.'%');
-                        })
-                        ->orWhereHas('customer', fn (Builder $customer) => $customer->where('full_name', 'like', '%'.$this->search.'%'))
-                        ->orWhereHas('agentSupplier', function (Builder $supplier): void {
-                            $supplier->where('name', 'like', '%'.$this->search.'%')
-                                ->orWhere('contact_number', 'like', '%'.$this->search.'%');
-                        });
-                });
-            })
-            ->when($this->filterStatus, fn (Builder $query) => $query->where('status', $this->filterStatus))
-            ->when($this->filterAgent, fn (Builder $query) => $query->where('agent_id', $this->filterAgent))
-            ->when($this->filterAgentSupplier, fn (Builder $query) => $query->where('agent_supplier_id', $this->filterAgentSupplier))
-            ->orderBy($this->sortColumn(), $this->sortDirection);
+        return (new CompanyAccountListQuery(
+            search: trim($this->search),
+            status: $this->filterStatus,
+            agentId: $this->filterAgent,
+            agentSupplierId: $this->filterAgentSupplier,
+            sort: $this->sortField,
+            direction: $this->sortDirection,
+        ))->query();
     }
 
     /**
-     * Resolve the column used for sorting, including related User and Agent Supplier columns.
+     * Export URL carrying the filters and sort order currently on screen, so the
+     * downloaded file matches the table the user is looking at.
      */
-    private function sortColumn(): string|Builder
+    public function exportUrl(string $format): string
     {
-        return match ($this->sortField) {
-            'agent_name' => Agent::query()->select('agent_name')->whereColumn('agents.id', 'company_accounts.agent_id'),
-            'agent_supplier_name' => AgentSupplier::query()->select('name')->whereColumn('agent_suppliers.id', 'company_accounts.agent_supplier_id'),
-            default => $this->sortField,
-        };
+        return route('rekening.company-accounts.export.'.$format, array_filter([
+            'search' => trim($this->search),
+            'status' => $this->filterStatus,
+            'agent' => $this->filterAgent,
+            'agent_supplier' => $this->filterAgentSupplier,
+            'sort' => $this->sortField,
+            'direction' => $this->sortDirection,
+        ], fn (string $value) => $value !== ''));
     }
 
     private function resetForm(): void
@@ -334,6 +324,8 @@ class CompanyAccountCrud extends Component
             'customers' => Customer::query()->orderBy('full_name')->get(),
             'agents' => Agent::query()->orderBy('agent_name')->get(),
             'agentSuppliers' => AgentSupplier::query()->orderBy('name')->get(),
+            'exportPdfUrl' => $this->exportUrl('pdf'),
+            'exportXlsxUrl' => $this->exportUrl('xlsx'),
         ]);
     }
 }
