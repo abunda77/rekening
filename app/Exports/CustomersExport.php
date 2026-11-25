@@ -2,16 +2,23 @@
 
 namespace App\Exports;
 
-use App\Models\Customer;
+use App\Services\CustomerListQuery;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
 class CustomersExport implements FromQuery, WithHeadings, WithMapping
 {
+    /**
+     * Export the rows matching the filters applied on the customers page.
+     */
+    public function __construct(
+        private readonly ?CustomerListQuery $customers = null,
+    ) {}
+
     public function query()
     {
-        return Customer::query()->latest();
+        return ($this->customers ?? new CustomerListQuery)->query();
     }
 
     public function headings(): array

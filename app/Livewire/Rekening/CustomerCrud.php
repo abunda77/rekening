@@ -2,9 +2,8 @@
 
 namespace App\Livewire\Rekening;
 
-use App\Exports\CustomersExport;
 use App\Models\Customer;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\CustomerListQuery;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
@@ -12,7 +11,6 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
-use Maatwebsite\Excel\Facades\Excel;
 use Spatie\ImageOptimizer\OptimizerChainFactory;
 
 #[Layout('layouts.app.sidebar')]
@@ -371,14 +369,24 @@ class CustomerCrud extends Component
 
     public function getCustomersQuery()
     {
-        return Customer::query()
-            ->when($this->search, function ($query) {
-                $query->where('nik', 'like', '%'.$this->search.'%')
-                    ->orWhere('full_name', 'like', '%'.$this->search.'%')
-                    ->orWhere('email', 'like', '%'.$this->search.'%')
-                    ->orWhere('phone_number', 'like', '%'.$this->search.'%');
-            })
-            ->orderBy($this->sortField, $this->sortDirection);
+        return (new CustomerListQuery(
+            search: trim($this->search),
+            sort: $this->sortField,
+            direction: $this->sortDirection,
+        ))->query();
+    }
+
+    /**
+     * Export URL carrying the search and sort order currently on screen, so the
+     * downloaded file matches the table the user is looking at.
+     */
+    public function exportUrl(string $format): string
+    {
+        return route('rekening.customers.export.'.$format, array_filter([
+            'search' => trim($this->search),
+            'sort' => $this->sortField,
+            'direction' => $this->sortDirection,
+        ], fn (string $value) => $value !== ''));
     }
 
     public function updatedSelectAll($value): void
@@ -424,22 +432,6 @@ class CustomerCrud extends Component
         $this->showBulkDeleteModal = false;
     }
 
-    public function exportXlsx()
-    {
-        return Excel::download(new CustomersExport, 'customers.xlsx');
-    }
-
-    public function exportPdf()
-    {
-        $customers = Customer::query()->latest()->get();
-        $pdf = Pdf::loadView('exports.customers-pdf', ['customers' => $customers]);
-        $pdf->setPaper('a4', 'landscape');
-
-        return response()->streamDownload(function () use ($pdf) {
-            echo $pdf->output();
-        }, 'customers.pdf');
-    }
-
     public function printDetailPdf(string $id)
     {
         $customer = Customer::findOrFail($id);
@@ -457,6 +449,8 @@ class CustomerCrud extends Component
 
         return view('livewire.rekening.customer-crud', [
             'customers' => $customers,
+            'exportPdfUrl' => $this->exportUrl('pdf'),
+            'exportXlsxUrl' => $this->exportUrl('xlsx'),
         ]);
     }
 }

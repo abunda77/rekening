@@ -1,5 +1,11 @@
 <?php
 
+use App\Http\Controllers\AccountPdfExportController;
+use App\Http\Controllers\AccountXlsxExportController;
+use App\Http\Controllers\CardPdfExportController;
+use App\Http\Controllers\CardXlsxExportController;
+use App\Http\Controllers\CustomerPdfExportController;
+use App\Http\Controllers\CustomerXlsxExportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpiredAccountExportController;
 use App\Livewire\Agent\Auth\Login as AgentLogin;
@@ -41,12 +47,18 @@ Route::middleware(['auth', 'verified'])->prefix('rekening')->group(function () {
     Route::get('/agents', AgentCrud::class)->name('rekening.agents');
     Route::get('/agent-suppliers', AgentSupplierCrud::class)->name('rekening.agent-suppliers');
     Route::get('/customers', CustomerCrud::class)->name('rekening.customers');
+    Route::get('/customers/export/pdf', CustomerPdfExportController::class)->name('rekening.customers.export.pdf');
+    Route::get('/customers/export/xlsx', CustomerXlsxExportController::class)->name('rekening.customers.export.xlsx');
     Route::get('/accounts', AccountCrud::class)->name('rekening.accounts');
+    Route::get('/accounts/export/pdf', AccountPdfExportController::class)->name('rekening.accounts.export.pdf');
+    Route::get('/accounts/export/xlsx', AccountXlsxExportController::class)->name('rekening.accounts.export.xlsx');
     Route::get('/company-accounts', CompanyAccountCrud::class)->name('rekening.company-accounts');
     Route::get('/expired-accounts', ExpiredAccount::class)->name('rekening.expired-accounts');
     Route::get('/expired-accounts/export', ExpiredAccountExportController::class)->name('rekening.expired-accounts.export');
     Route::get('/account-stocks', AccountStockCrud::class)->name('rekening.account-stocks');
     Route::get('/cards', CardCrud::class)->name('rekening.cards');
+    Route::get('/cards/export/pdf', CardPdfExportController::class)->name('rekening.cards.export.pdf');
+    Route::get('/cards/export/xlsx', CardXlsxExportController::class)->name('rekening.cards.export.xlsx');
     Route::get('/complaints', ComplaintCrud::class)->name('rekening.complaints');
     Route::get('/shipments', ShipmentCrud::class)->name('rekening.shipments');
     Route::get('/notes', NoteCrud::class)->name('rekening.notes');

@@ -2,16 +2,23 @@
 
 namespace App\Exports;
 
-use App\Models\Account;
+use App\Services\AccountListQuery;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
 class AccountsExport implements FromQuery, WithHeadings, WithMapping
 {
+    /**
+     * Export the rows matching the filters applied on the accounts page.
+     */
+    public function __construct(
+        private readonly ?AccountListQuery $accounts = null,
+    ) {}
+
     public function query()
     {
-        return Account::query()->with(['customer', 'agent'])->latest();
+        return ($this->accounts ?? new AccountListQuery)->query();
     }
 
     public function headings(): array

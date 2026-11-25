@@ -2,19 +2,17 @@
 
 namespace App\Livewire\Rekening;
 
-use App\Exports\AccountsExport;
 use App\Models\Account;
 use App\Models\Agent;
 use App\Models\AgentSupplier;
 use App\Models\Customer;
+use App\Services\AccountListQuery;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
-use Maatwebsite\Excel\Facades\Excel;
 
 #[Layout('layouts.app.sidebar')]
 #[Title('Manajemen Rekening')]
@@ -297,49 +295,30 @@ class AccountCrud extends Component
 
     public function getRowsQuery()
     {
-        return Account::query()
-            ->with(['customer', 'agent', 'agentSupplier'])
-            ->when($this->search, function ($query) {
-                $query->where(function ($query): void {
-                    $query->where('account_number', 'like', '%'.$this->search.'%')
-                        ->orWhere('bank_name', 'like', '%'.$this->search.'%')
-                        ->orWhere('note', 'like', '%'.$this->search.'%')
-                        // Mobile banking hanya dicari dengan kata/frasa, bukan angka (PIN dan sejenisnya).
-                        ->when(preg_match('/\\p{L}/u', $this->search) === 1, function ($q): void {
-                            $q->orWhere('mobile_banking', 'like', '%'.$this->search.'%');
-                        })
-                        ->orWhereHas('customer', function ($q) {
-                            $q->where('full_name', 'like', '%'.$this->search.'%')
-                                ->orWhere('nik', 'like', '%'.$this->search.'%');
-                        })
-                        ->orWhereHas('agentSupplier', function ($q) {
-                            $q->where('name', 'like', '%'.$this->search.'%')
-                                ->orWhere('contact_number', 'like', '%'.$this->search.'%');
-                        });
-                });
-            })
-            ->when($this->filterStatus, function ($query) {
-                $query->where('status', $this->filterStatus);
-            })
-            ->when($this->filterAgent, function ($query) {
-                $query->where('agent_id', $this->filterAgent);
-            })
-            ->when($this->filterAgentSupplier, function ($query) {
-                $query->where('agent_supplier_id', $this->filterAgentSupplier);
-            })
-            ->orderBy($this->sortColumn(), $this->sortDirection);
+        return (new AccountListQuery(
+            search: trim($this->search),
+            status: $this->filterStatus,
+            agentId: $this->filterAgent,
+            agentSupplierId: $this->filterAgentSupplier,
+            sort: $this->sortField,
+            direction: $this->sortDirection,
+        ))->query();
     }
 
     /**
-     * Resolve the column used for sorting, including related User and Agent Supplier columns.
+     * PDF export URL carrying the filters and sort order currently on screen, so the
+     * downloaded file matches the table the user is looking at.
      */
-    private function sortColumn(): string|Builder
+    public function exportUrl(string $format): string
     {
-        return match ($this->sortField) {
-            'agent_name' => Agent::query()->select('agent_name')->whereColumn('agents.id', 'accounts.agent_id'),
-            'agent_supplier_name' => AgentSupplier::query()->select('name')->whereColumn('agent_suppliers.id', 'accounts.agent_supplier_id'),
-            default => $this->sortField,
-        };
+        return route('rekening.accounts.export.'.$format, array_filter([
+            'search' => trim($this->search),
+            'status' => $this->filterStatus,
+            'agent' => $this->filterAgent,
+            'agent_supplier' => $this->filterAgentSupplier,
+            'sort' => $this->sortField,
+            'direction' => $this->sortDirection,
+        ], fn (string $value) => $value !== ''));
     }
 
     public function updatedSelectAll($value): void
@@ -379,22 +358,6 @@ class AccountCrud extends Component
         $this->showBulkDeleteModal = false;
     }
 
-    public function exportXlsx()
-    {
-        return Excel::download(new AccountsExport, 'accounts.xlsx');
-    }
-
-    public function exportPdf()
-    {
-        $accounts = Account::query()->with(['customer', 'agent'])->latest()->get();
-        $pdf = Pdf::loadView('exports.accounts-pdf', ['accounts' => $accounts]);
-        $pdf->setPaper('a4', 'landscape');
-
-        return response()->streamDownload(function () use ($pdf) {
-            echo $pdf->output();
-        }, 'accounts.pdf');
-    }
-
     public function printDetailPdf(string $id)
     {
         $account = Account::with(['customer', 'agent'])->findOrFail($id);
@@ -415,6 +378,8 @@ class AccountCrud extends Component
             'customers' => Customer::orderBy('full_name')->get(),
             'agents' => Agent::orderBy('agent_name')->get(),
             'agentSuppliers' => AgentSupplier::orderBy('name')->get(),
+            'exportPdfUrl' => $this->exportUrl('pdf'),
+            'exportXlsxUrl' => $this->exportUrl('xlsx'),
         ]);
     }
 }

@@ -52,10 +52,10 @@
                         Hapus ({{ count($selected) }})
                     </flux:button>
                 @endif
-                <flux:button wire:click="exportXlsx" variant="outline" icon="arrow-down-tray">
+                <flux:button href="{{ $exportXlsxUrl }}" variant="outline" icon="arrow-down-tray">
                     XLSX
                 </flux:button>
-                <flux:button wire:click="exportPdf" variant="outline" icon="document-text">
+                <flux:button href="{{ $exportPdfUrl }}" variant="outline" icon="document-text">
                     PDF
                 </flux:button>
             </div>

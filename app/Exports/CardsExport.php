@@ -2,16 +2,23 @@
 
 namespace App\Exports;
 
-use App\Models\Card;
+use App\Services\CardListQuery;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
 class CardsExport implements FromQuery, WithHeadings, WithMapping
 {
+    /**
+     * Export the rows matching the filters applied on the cards page.
+     */
+    public function __construct(
+        private readonly ?CardListQuery $cards = null,
+    ) {}
+
     public function query()
     {
-        return Card::query()->with(['account.customer'])->latest();
+        return ($this->cards ?? new CardListQuery)->query();
     }
 
     public function headings(): array

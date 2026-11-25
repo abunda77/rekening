@@ -4,9 +4,7 @@ namespace App\Livewire\Rekening;
 
 use App\Models\Account;
 use App\Models\Card;
-use App\Exports\CardsExport;
-use Maatwebsite\Excel\Facades\Excel;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\CardListQuery;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -198,17 +196,24 @@ class CardCrud extends Component
 
     public function getRowsQuery()
     {
-        return Card::query()
-            ->with(['account.customer'])
-            ->when($this->search, function ($query) {
-                $query->where('card_number', 'like', '%'.$this->search.'%')
-                    ->orWhere('card_type', 'like', '%'.$this->search.'%')
-                    ->orWhereHas('account', function ($q) {
-                        $q->where('account_number', 'like', '%'.$this->search.'%')
-                            ->orWhere('bank_name', 'like', '%'.$this->search.'%');
-                    });
-            })
-            ->orderBy($this->sortField, $this->sortDirection);
+        return (new CardListQuery(
+            search: trim($this->search),
+            sort: $this->sortField,
+            direction: $this->sortDirection,
+        ))->query();
+    }
+
+    /**
+     * Export URL carrying the search and sort order currently on screen, so the
+     * downloaded file matches the table the user is looking at.
+     */
+    public function exportUrl(string $format): string
+    {
+        return route('rekening.cards.export.'.$format, array_filter([
+            'search' => trim($this->search),
+            'sort' => $this->sortField,
+            'direction' => $this->sortDirection,
+        ], fn (string $value) => $value !== ''));
     }
 
     public function updatedSelectAll($value): void
@@ -248,22 +253,6 @@ class CardCrud extends Component
         $this->showBulkDeleteModal = false;
     }
 
-    public function exportXlsx()
-    {
-        return Excel::download(new CardsExport, 'cards.xlsx');
-    }
-
-    public function exportPdf()
-    {
-        $cards = Card::query()->with(['account.customer'])->latest()->get();
-        $pdf = Pdf::loadView('exports.cards-pdf', ['cards' => $cards]);
-        $pdf->setPaper('a4', 'landscape');
-
-        return response()->streamDownload(function () use ($pdf) {
-            echo $pdf->output();
-        }, 'cards.pdf');
-    }
-
     public function printDetailPdf(string $id)
     {
         $card = Card::with(['account.customer'])->findOrFail($id);
@@ -272,7 +261,7 @@ class CardCrud extends Component
 
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->output();
-        }, 'card_' . $card->card_number . '.pdf');
+        }, 'card_'.$card->card_number.'.pdf');
     }
 
     public function render()
@@ -296,6 +285,8 @@ class CardCrud extends Component
         return view('livewire.rekening.card-crud', [
             'cards' => $cards,
             'searchedAccounts' => $searchedAccounts,
+            'exportPdfUrl' => $this->exportUrl('pdf'),
+            'exportXlsxUrl' => $this->exportUrl('xlsx'),
         ]);
     }
 }
