@@ -6,7 +6,7 @@ use function Pest\Laravel\actingAs;
 use function Pest\Laravel\getJson;
 use function Pest\Laravel\postJson;
 
-test('a user can register', function () {
+test('registration endpoint is disabled', function () {
     $response = postJson('/api/register', [
         'name' => 'Test User',
         'email' => 'test@example.com',
@@ -14,12 +14,7 @@ test('a user can register', function () {
         'password_confirmation' => 'password',
     ]);
 
-    $response->assertStatus(201)
-        ->assertJsonStructure([
-            'access_token',
-            'token_type',
-            'user',
-        ]);
+    $response->assertNotFound();
 });
 
 test('a user can login', function () {
