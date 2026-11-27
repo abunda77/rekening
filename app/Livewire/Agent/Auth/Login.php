@@ -14,6 +14,23 @@ use Livewire\Component;
 #[Title('Agent Login')]
 class Login extends Component
 {
+    /**
+     * Maximum failed login attempts allowed per agent code + IP combination.
+     */
+    private const MAX_ATTEMPTS = 5;
+
+    /**
+     * Maximum failed login attempts allowed per IP address, regardless of agent code.
+     *
+     * Guards against password spraying that rotates agent codes from one host.
+     */
+    private const MAX_ATTEMPTS_PER_IP = 30;
+
+    /**
+     * Lockout window in seconds once the limit is reached.
+     */
+    private const DECAY_SECONDS = 60;
+
     public string $agent_code = '';
 
     public string $password = '';
@@ -30,7 +47,8 @@ class Login extends Component
         $this->ensureIsNotRateLimited();
 
         if (! Auth::guard('agent')->attempt(['agent_code' => $this->agent_code, 'password' => $this->password], $this->remember)) {
-            RateLimiter::hit($this->throttleKey());
+            RateLimiter::hit($this->throttleKey(), self::DECAY_SECONDS);
+            RateLimiter::hit($this->ipThrottleKey(), self::DECAY_SECONDS);
 
             throw ValidationException::withMessages([
                 'agent_code' => 'The provided credentials do not match our records.',
@@ -44,25 +62,38 @@ class Login extends Component
         return redirect()->intended(route('agent.dashboard'));
     }
 
-    protected function ensureIsNotRateLimited()
+    protected function ensureIsNotRateLimited(): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
-            return;
+        foreach ([$this->throttleKey() => self::MAX_ATTEMPTS, $this->ipThrottleKey() => self::MAX_ATTEMPTS_PER_IP] as $key => $maxAttempts) {
+            if (! RateLimiter::tooManyAttempts($key, $maxAttempts)) {
+                continue;
+            }
+
+            $seconds = RateLimiter::availableIn($key);
+
+            throw ValidationException::withMessages([
+                'agent_code' => trans('auth.throttle', [
+                    'seconds' => $seconds,
+                    'minutes' => ceil($seconds / 60),
+                ]),
+            ]);
         }
-
-        $seconds = RateLimiter::availableIn($this->throttleKey());
-
-        throw ValidationException::withMessages([
-            'agent_code' => trans('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
-        ]);
     }
 
-    protected function throttleKey()
+    /**
+     * Throttle key for the submitted agent code combined with the client IP.
+     */
+    protected function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->agent_code).'|'.request()->ip());
+        return 'agent-login:'.Str::transliterate(Str::lower($this->agent_code).'|'.request()->ip());
+    }
+
+    /**
+     * Throttle key covering every agent code attempted from the client IP.
+     */
+    protected function ipThrottleKey(): string
+    {
+        return 'agent-login-ip:'.request()->ip();
     }
 
     public function render()

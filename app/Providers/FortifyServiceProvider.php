@@ -14,6 +14,18 @@ use Laravel\Fortify\Fortify;
 class FortifyServiceProvider extends ServiceProvider
 {
     /**
+     * Maximum failed login attempts allowed per username + IP combination.
+     */
+    private const LOGIN_MAX_ATTEMPTS = 5;
+
+    /**
+     * Maximum login attempts allowed per IP address, regardless of username.
+     *
+     * Guards against password spraying that rotates usernames from one host.
+     */
+    private const LOGIN_MAX_ATTEMPTS_PER_IP = 30;
+
+    /**
      * Register any application services.
      */
     public function register(): void
@@ -64,9 +76,12 @@ class FortifyServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('login', function (Request $request) {
-            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
+            $throttleKey = Str::transliterate(Str::lower((string) $request->input(Fortify::username())).'|'.$request->ip());
 
-            return Limit::perMinute(5)->by($throttleKey);
+            return [
+                Limit::perMinute(self::LOGIN_MAX_ATTEMPTS)->by($throttleKey),
+                Limit::perMinute(self::LOGIN_MAX_ATTEMPTS_PER_IP)->by('login-ip:'.$request->ip()),
+            ];
         });
     }
 }
