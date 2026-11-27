@@ -16,6 +16,7 @@ use App\Livewire\Agent\HelpDesk;
 use App\Livewire\Agent\Shipment;
 use App\Livewire\Rekening\AccountCrud;
 use App\Livewire\Rekening\AccountStockCrud;
+use App\Livewire\Rekening\ActivityLogCrud;
 use App\Livewire\Rekening\AgentCrud;
 use App\Livewire\Rekening\AgentSupplierCrud;
 use App\Livewire\Rekening\CardCrud;
@@ -71,6 +72,7 @@ Route::middleware(['auth', 'verified'])->prefix('rekening')->group(function () {
     Route::get('/permissions', PermissionCrud::class)->name('rekening.permissions')->middleware(['role:Super Admin']);
     Route::get('/users', UserCrud::class)->name('rekening.users')->middleware(['role:Super Admin']);
     Route::get('/backups', DatabaseBackupCrud::class)->name('rekening.backups')->middleware(['role:Super Admin']);
+    Route::get('/activities', ActivityLogCrud::class)->name('rekening.activities')->middleware(['role:Super Admin']);
 
     // Backup download route
     Route::get('/backups/{backup}/download', function (DatabaseBackup $backup) {

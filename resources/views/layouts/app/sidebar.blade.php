@@ -274,6 +274,15 @@
                         </x-slot:icon>
                         <span class="nav-item-text">{{ __('Backup Database') }}</span>
                     </flux:sidebar.item>
+                    <flux:sidebar.item :href="route('rekening.activities')" :current="request()->routeIs('rekening.activities')"
+                        wire:navigate>
+                        <x-slot:icon>
+                            <div class="sidebar-icon-wrapper {{ request()->routeIs('rekening.activities') ? 'active' : '' }}">
+                                @include('flux::icon.finger-print')
+                            </div>
+                        </x-slot:icon>
+                        <span class="nav-item-text">{{ __('Activity') }}</span>
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             @endif
         </flux:sidebar.nav>
